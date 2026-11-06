@@ -76,6 +76,6 @@ final class ServiceTests:XCTestCase {
         XCTAssertEqual(Paths.directory(mock:false,env:[:]).path,FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Bottled Reset Rune").path)
         XCTAssertEqual(Paths.label(mock:false),"local.reset-rune.service")
         XCTAssertEqual(Paths.label(mock:true),"local.reset-rune.service.mock")
-        XCTAssertEqual(NativeRuntime.version,"0.1.1")
+        XCTAssertEqual(NativeRuntime.version,"0.1.2")
     }
 }

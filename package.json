@@ -1,6 +1,6 @@
 {
   "name": "reset-rune",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Automatically use Reset Runes (spare Codex resets) before they expire.",
   "license": "MIT",
   "repository": {

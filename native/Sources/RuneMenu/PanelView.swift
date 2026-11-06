@@ -120,17 +120,18 @@ struct PanelView: View {
     }
 
     private var summary: some View {
-        Button { model.togglePanel("credits") } label: {
+        let showingInventory = model.panel == "credits" && model.bottle == .stored
+        return Button { model.togglePanel("credits") } label: {
             HStack(spacing: 12) {
                 bottleArtwork
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(model.expiryHeading).font(.system(size: 11)).foregroundStyle(model.isExpiring ? palette.caution : palette.muted)
+                        Text(showingInventory ? model.text("inventory") : model.expiryHeading).font(.system(size: 11)).foregroundStyle(model.isExpiring ? palette.caution : palette.muted)
                         Spacer(minLength: 4)
                         Image(systemName: model.panel == "credits" ? "chevron.down" : "chevron.right").font(.system(size: 10, weight: .medium)).foregroundStyle(palette.brass)
                     }
-                    Text(model.expiryLabel).font(.system(size: 20, weight: .medium)).tracking(-0.4).monospacedDigit().fixedSize(horizontal: false, vertical: true)
-                    if !model.countLabel.isEmpty { Text(model.countLabel).font(.system(size: 11)).foregroundStyle(palette.brass) }
+                    Text(showingInventory ? model.countLabel : model.expiryLabel).font(.system(size: 20, weight: .medium)).tracking(-0.4).monospacedDigit().fixedSize(horizontal: false, vertical: true)
+                    if model.panel != "credits", !model.countLabel.isEmpty { Text(model.countLabel).font(.system(size: 11)).foregroundStyle(palette.brass) }
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 22).padding(.vertical, 14)
@@ -139,7 +140,7 @@ struct PanelView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(model.text("rune"))
-        .accessibilityValue([model.expiryLabel, model.countLabel].filter { !$0.isEmpty }.joined(separator: ", "))
+        .accessibilityValue(showingInventory ? model.countLabel : [model.expiryLabel, model.countLabel].filter { !$0.isEmpty }.joined(separator: ", "))
         .accessibilityHint(model.text(model.panel == "credits" ? "hideRunes" : "showRunes"))
     }
 
@@ -163,24 +164,17 @@ struct PanelView: View {
 
     private var creditDetails: some View {
         VStack(alignment: .leading, spacing: 0) {
-            runeDescription
-            let others = model.bottle == .stored ? (model.state?.otherExpiryLines(now: model.visibleNow, language: model.language) ?? []) : []
-            if !others.isEmpty {
+            let rows = model.bottle == .stored ? (model.state?.inventoryRows(now: model.now) ?? []) : []
+            if !rows.isEmpty {
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(Array(others.enumerated()), id: \.offset) { index, line in
-                            if index > 0 { separator }
-                            Text(line)
-                                .font(.system(size: 12)).frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 9)
+                        ForEach(rows) { row in
+                            runeRow(row)
                         }
                     }
-                }.frame(height: min(CGFloat(others.count) * 36, 150))
+                }
+                .frame(height: min(CGFloat(rows.count) * 44, 176))
             }
-            if model.incompleteInventory && model.next != nil {
-                Text(model.text("partial"))
-                    .font(.system(size: 11)).foregroundStyle(palette.muted).padding(.bottom, 9)
-            }
-            separator
             VStack(spacing: 7) {
                 HStack {
                     Text(model.text("allowance")).font(.system(size: 12, weight: .semibold))
@@ -215,33 +209,32 @@ struct PanelView: View {
         }.padding(.horizontal, 22).padding(.bottom, 13)
     }
 
-    private var runeDescription: some View {
-        HStack(spacing: 12) {
-            if let image = MenuArtwork.panel("reset-rune.png") {
-                Image(nsImage: image).resizable().interpolation(.high).scaledToFit()
-                    .frame(width: 60, height: 60).accessibilityHidden(true)
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(model.text("rune")).font(.system(size: 14, weight: .semibold))
-                Text(model.text("runeEffect")).font(.system(size: 12)).foregroundStyle(palette.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            palette.well.overlay {
-                if let texture = MenuArtwork.panel("dota-texture.jpg") {
-                    Image(nsImage: texture).resizable().scaledToFill()
-                        .opacity(colorScheme == .dark ? 0.62 : 0.04)
+    private func runeRow(_ row: PanelRuneRow) -> some View {
+        HStack(spacing: 8) {
+            Group {
+                if let image = MenuArtwork.panel("reset-rune.png") {
+                    Image(nsImage: image).resizable().interpolation(.high).scaledToFit()
+                } else {
+                    Image(systemName: "arrow.counterclockwise").foregroundStyle(palette.accent)
                 }
-            }.clipped().accessibilityHidden(true)
-        }
-        .overlay(alignment: .bottom) {
-            if let divider = MenuArtwork.panel("dota-divider.png") {
-                Image(nsImage: divider).resizable().scaledToFit().accessibilityHidden(true)
             }
+            .frame(width: 28, height: 28)
+            .accessibilityHidden(true)
+            Text(row.count > 1 ? "\(model.text("rune")) ×\(row.count)" : model.text("rune"))
+                .font(.system(size: 12, weight: .medium))
+                .lineLimit(1)
+            Spacer(minLength: 6)
+            Text(row.expiresAt.map { PanelCopy.date($0, language: model.language, now: model.visibleNow) } ?? model.text("unknownExpiry"))
+                .font(.system(size: 12))
+                .monospacedDigit()
+                .foregroundStyle(palette.muted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .layoutPriority(1)
         }
+        .frame(height: 44)
+        .help(model.text("runeEffect"))
+        .overlay(alignment: .bottom) { separator }
         .accessibilityElement(children: .combine)
     }
 

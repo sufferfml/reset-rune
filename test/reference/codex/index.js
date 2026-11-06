@@ -300,7 +300,7 @@ function runAppServer(executable, env, timeoutMs, { operation, now = Date.now } 
     });
 
     send({ id: 1, method: 'initialize', params: {
-      clientInfo: { name: 'reset-rune', title: 'Bottled Reset Rune', version: '0.1.1' },
+      clientInfo: { name: 'reset-rune', title: 'Bottled Reset Rune', version: '0.1.2' },
       capabilities: { experimentalApi: true },
     } });
   });

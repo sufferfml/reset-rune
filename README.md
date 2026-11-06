@@ -16,8 +16,8 @@ Requires **macOS 13 or later** and the official **Codex CLI 0.153.0**, installed
 
 ### macOS app
 
-- [Download for Apple Silicon](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-arm64.dmg)
-- [Download for Intel](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-x64.dmg)
+- [Download for Apple Silicon](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-arm64.dmg)
+- [Download for Intel](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-x64.dmg)
 
 Open the DMG, drag Bottled Reset Rune into Applications, then open the app. Both versions are Developer ID signed and Apple notarized.
 

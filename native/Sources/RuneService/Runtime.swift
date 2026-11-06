@@ -16,7 +16,7 @@ public final class LifecycleLease {
 }
 
 public enum NativeRuntime {
-    public static let version = "0.1.1"
+    public static let version = "0.1.2"
     public static func executable() -> URL { URL(fileURLWithPath:CommandLine.arguments[0]).standardizedFileURL.resolvingSymlinksInPath() }
     public static func run(_ path: String, _ args: [String], timeout: TimeInterval = 10) throws -> Data {
         let p=Process(); p.executableURL=URL(fileURLWithPath:path); p.arguments=args

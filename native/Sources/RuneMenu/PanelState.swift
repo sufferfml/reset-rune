@@ -23,6 +23,12 @@ struct PanelCredit: Decodable, Equatable, Identifiable {
     var expiresAt: Double?
 }
 
+struct PanelRuneRow: Equatable, Identifiable {
+    let id: String
+    let expiresAt: Double?
+    let count: Int
+}
+
 struct PanelInventory: Decodable {
     var identity: PanelIdentity?
     var availableCount: Int?
@@ -80,22 +86,19 @@ struct PanelState: Decodable {
             .min { $0.expiresAt! < $1.expiresAt! }
     }
 
-    func otherExpiryLines(now: Date, language: String) -> [String] {
-        let future = (snapshot?.credits ?? []).compactMap(\.expiresAt)
-            .filter { validEpoch($0) && $0 > now.timeIntervalSince1970 * 1000 }
+    func inventoryRows(now: Double) -> [PanelRuneRow] {
+        let credits = snapshot?.credits ?? []
+        let future = credits.compactMap(\.expiresAt)
+            .filter { validEpoch($0) && $0 > now }
         let byMinute = Dictionary(grouping: future) { Int64($0 / 60_000) }
-        let minutes = byMinute.keys.sorted()
-        return minutes.compactMap { minute in
-            guard let expiries = byMinute[minute], let expiry = expiries.first else { return nil }
-            if minute == minutes.first {
-                let extra = expiries.count - 1
-                guard extra > 0 else { return nil }
-                return language == "zh" ? "另有 \(extra) 枚在同一分钟到期" : "\(extra) more due that minute"
-            }
-            let date = PanelCopy.date(expiry, language: language, now: now)
-            if expiries.count == 1 { return language == "zh" ? "\(date) 到期" : "Expires \(date)" }
-            return language == "zh" ? "\(date) 到期 · \(expiries.count) 枚" : "\(expiries.count) expire \(date)"
+        var rows = byMinute.sorted { $0.key < $1.key }.map { group in
+            PanelRuneRow(id: "minute-\(group.key)", expiresAt: group.value.min(), count: group.value.count)
         }
+        let unknownCount = max(0, (snapshot?.availableCount ?? 0) - future.count)
+        if unknownCount > 0 {
+            rows.append(PanelRuneRow(id: "unknown", expiresAt: nil, count: unknownCount))
+        }
+        return rows
     }
 
     func recentEvents() -> [PanelEventRow] {
@@ -127,6 +130,7 @@ enum PanelCopy {
             "knownNext": ("Next known expiry", "最近已知到期"),
             "fading": ("Expiring soon", "即将到期"),
             "rune": ("Reset Rune", "重置神符"),
+            "inventory": ("Bottle inventory", "魔瓶库存"),
             "runeEffect": ("Resets eligible Codex usage limits when redeemed.", "兑换后可重置符合条件的 Codex 额度。"),
             "showRunes": ("Show Reset Rune details", "展开重置神符明细"),
             "hideRunes": ("Hide Reset Rune details", "收起重置神符明细"),

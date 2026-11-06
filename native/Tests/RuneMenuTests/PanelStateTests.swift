@@ -17,6 +17,8 @@ final class PanelStateTests: XCTestCase {
         XCTAssertEqual(result.bottle(), .stored)
         XCTAssertEqual(result.snapshot?.availableCount, 3)
         XCTAssertEqual(result.snapshot?.credits?.count, 1)
+        XCTAssertEqual(result.inventoryRows(now: 1000).map(\.count), [1, 2])
+        XCTAssertNil(result.inventoryRows(now: 1000).last?.expiresAt)
     }
 
     func testEmptyAndUnknownRemainDifferent() throws {
@@ -35,26 +37,27 @@ final class PanelStateTests: XCTestCase {
         XCTAssertEqual(result.bottle(now: 21000), .stored)
     }
 
-    func testDetailLinesDoNotRepeatTheSummaryMinuteOrExpiredAndUnknownRows() throws {
+    func testInventoryRowsIncludeEarliestAndGroupSameMinute() throws {
         let result = try state(count: 5, credits: [
             ["id": "later", "expiresAt": 125000], ["id": "also-later", "expiresAt": 127000],
             ["id": "first", "expiresAt": 20000], ["id": "same-minute", "expiresAt": 21000],
             ["id": "past", "expiresAt": 5000], ["id": "unknown", "expiresAt": NSNull()]
         ])
-        let now = Date(timeIntervalSince1970: 10)
         XCTAssertEqual(result.nextCredit(now: 10000)?.id, "first")
-        let laterZH = PanelCopy.date(125000, language: "zh", now: now)
-        let laterEN = PanelCopy.date(125000, language: "en", now: now)
-        XCTAssertEqual(result.otherExpiryLines(now: now, language: "zh"), ["另有 1 枚在同一分钟到期", "\(laterZH) 到期 · 2 枚"])
-        XCTAssertEqual(result.otherExpiryLines(now: now, language: "en"), ["1 more due that minute", "2 expire \(laterEN)"])
+        let rows = result.inventoryRows(now: 10000)
+        XCTAssertEqual(rows.map(\.expiresAt), [20000, 125000, nil])
+        XCTAssertEqual(rows.map(\.count), [2, 2, 1])
+        XCTAssertEqual(Set(rows.map(\.id)).count, rows.count)
         let single = try state(count: 1, credits: [["id": "first", "expiresAt": 20000]])
-        XCTAssertTrue(single.otherExpiryLines(now: now, language: "zh").isEmpty)
+        XCTAssertEqual(single.inventoryRows(now: 10000), [PanelRuneRow(id: "minute-0", expiresAt: 20000, count: 1)])
+        XCTAssertEqual(single.inventoryRows(now: 20000), [PanelRuneRow(id: "unknown", expiresAt: nil, count: 1)])
     }
 
     func testExpiredOrInvalidDatesNeverBecomeNext() throws {
         let result = try state(credits: [["id": "expired", "expiresAt": 500], ["id": "missing", "expiresAt": NSNull()], ["id": "future", "expiresAt": 20000]])
         XCTAssertEqual(result.nextCredit(now: 1000)?.id, "future")
         XCTAssertNil(result.nextCredit(now: 20000))
+        XCTAssertEqual(result.inventoryRows(now: 1000).map(\.expiresAt), [20000, nil])
         XCTAssertFalse(validEpoch(.infinity))
         XCTAssertFalse(validEpoch(-1))
     }

@@ -46,7 +46,7 @@ for(const arch of arches){
  await cp(path.join(bin,'BottledResetRuneMenu'),path.join(app,'Contents/MacOS/Bottled Reset Rune'));
  await cp(path.join(bin,'reset-rune'),path.join(helper,'Contents/MacOS/reset-rune'));
  for(const file of [path.join(app,'Contents/MacOS/Bottled Reset Rune'),path.join(helper,'Contents/MacOS/reset-rune')]){await chmod(file,0o755);await exec('/usr/bin/strip',['-S',file]);}
- const common={CFBundlePackageType:'APPL',CFBundleShortVersionString:version,CFBundleVersion:'101',LSMinimumSystemVersion:'13.0',NSHighResolutionCapable:true};
+ const common={CFBundlePackageType:'APPL',CFBundleShortVersionString:version,CFBundleVersion:'103',LSMinimumSystemVersion:'13.0',NSHighResolutionCapable:true};
  await plist(path.join(helper,'Contents/Info.plist'),{...common,CFBundleIdentifier:'local.reset-rune.runtime',CFBundleExecutable:'reset-rune',CFBundleName:'Bottled Reset Rune Service',LSBackgroundOnly:true});
  await plist(path.join(app,'Contents/Info.plist'),{...common,CFBundleIdentifier:'local.reset-rune.desktop',CFBundleExecutable:'Bottled Reset Rune',CFBundleName:'Bottled Reset Rune',CFBundleDisplayName:'Bottled Reset Rune',CFBundleIconFile:'icon',LSUIElement:true,BottledResetRuneNative:true,NSAppTransportSecurity:{NSAllowsLocalNetworking:true}});
  for(const name of ['bottle.png','bottle-empty.png','reset-rune.png','dota-divider.png','dota-texture.jpg','dota-success.png'])await cp(path.join(root,'assets/panel',name),path.join(resources,name));

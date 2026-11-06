@@ -16,8 +16,8 @@ Bottled Reset Rune 是一款轻量、开源的 macOS 菜单栏工具。每枚**�
 
 ### macOS 应用
 
-- [下载 Apple 芯片版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-arm64.dmg)
-- [下载 Intel 版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-x64.dmg)
+- [下载 Apple 芯片版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-arm64.dmg)
+- [下载 Intel 版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-x64.dmg)
 
 打开 DMG，将 Bottled Reset Rune 拖入“应用程序”，然后打开应用。两个版本均已通过 Developer ID 签名和 Apple 公证。
 
