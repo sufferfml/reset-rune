@@ -30,7 +30,7 @@ npm install -g reset-rune
 reset-rune ui
 ```
 
-The npm package is at v0.1.0. Download the GitHub DMG above for the v0.1.1 interface shown here.
+Both installation methods open the same native macOS menu bar app.
 
 ## Get started
 

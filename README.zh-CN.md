@@ -30,7 +30,7 @@ npm install -g reset-rune
 reset-rune ui
 ```
 
-npm 当前提供 v0.1.0。上方的 GitHub DMG 提供图中的 v0.1.1 界面。
+两种安装方式打开的都是同一个 macOS 原生菜单栏应用。
 
 ## 开始使用
 
