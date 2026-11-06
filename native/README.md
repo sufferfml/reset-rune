@@ -13,7 +13,7 @@
 | `Sources/CodexTransport` | App Server stdio 传输、运行时发现、账号与库存归一化 |
 | `Sources/RuneService` | 私有文件、回环通信、订阅、系统事件和运行包管理 |
 | `Sources/RuneCommand` | `reset-rune` 命令入口 |
-| `Sources/RuneMenu` | `BottledResetRuneMenu` 菜单栏与紧凑原生面板 |
+| `Sources/RuneMenu` | `BottledResetRuneMenu` 菜单栏与紧凑原生面板。[MenuArtwork](Sources/RuneMenu/MenuArtwork.swift) 在应用包和源码调试环境中加载[界面美术](../assets/ARTWORK.md)。 |
 | `Tests`、`../test/contracts` | 假时钟、合成服务与共享合同验证 |
 
 ## 构建与测试

@@ -1,6 +1,6 @@
 # Bottled Reset Rune
 
-独立的 macOS 菜单栏工具。用户核对 Codex 账号后，可在备用重置到期前自动尝试使用。正式产品默认关闭自动使用，模拟模式使用独立状态。
+独立的 macOS 菜单栏工具。界面将一次 Codex 备用重置称为一枚「重置神符」（Reset Rune）。用户核对账号并开启自动使用后，应用可在神符到期前尝试使用。模拟模式使用独立状态。
 
 ## 边界
 
@@ -12,7 +12,7 @@
 - 未获授权不提交、推送或发布。发布构建只使用本机明确选择的签名身份和钥匙串凭据。
 - 应用显示名为 `Bottled Reset Rune`；npm 包、CLI、GitHub 仓库和项目目录名为 `reset-rune`。
 - 数据目录为 `~/Library/Application Support/Bottled Reset Rune`，服务标签为 `local.reset-rune.service`，环境变量使用 `RESET_RUNE_*`。模拟目录、服务标签和端口须与正式模式隔离。
-- 魔瓶素材为原创，不复制 Valve 游戏资源。
+- Dota 2 原版美术及适配图标按 `assets/ARTWORK.md` 记录出处与权利归属。展开明细中的重置神符由本项目单独设计。
 
 ## 导航
 
@@ -29,7 +29,7 @@
 | `docs/acceptance-matrix.md` | 验证范围与需要区分的证据类型 |
 | `docs/windows-development-plan.md`、`docs/windows-technical-design.md` | 尚未实现的 Windows 开发计划、拟定架构、分发与验收门槛；不得作为 Windows 已可用的证据 |
 | `design/README.md`、`design/theme.md`、`.impeccable.md` | 紧凑面板、魔瓶主题与交互约定 |
-| `assets/panel`、`assets/icons` | 原创面板图片、应用图标和菜单栏模板图标 |
+| [美术来源](assets/ARTWORK.md)、`assets/panel`、`assets/icons` | Dota 2 原版素材、各平台图标及明细区专用的重置神符图 |
 
 ## 验证
 

@@ -1,4 +1,4 @@
-// INPUT: The native menu model, original bundle resources and local service.
+// INPUT: The native menu model, bundled color tray artwork and local service.
 // OUTPUT: A small macOS status item and disposable settings panel.
 // POS: GUI entry point. The launchd service has an independent lifecycle.
 import AppKit
@@ -149,15 +149,16 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
 
     private func updatePresentation() {
         NSApp.mainMenu?.items.first?.submenu?.items.first?.title = model.text("quit")
-        let names: [PanelState.Bottle: String] = [.stored: "trayTemplate", .empty: "trayEmptyTemplate", .unknown: "trayUnknownTemplate"]
-        if let resource = Bundle.main.resourceURL,
-           let image = NSImage(contentsOf: resource.appendingPathComponent("\(names[model.bottle]!).png")) {
-            image.isTemplate = true
+        let names: [PanelState.Bottle: String] = [.stored: "trayStored", .empty: "trayEmpty", .unknown: "trayUnknown"]
+        if let name = names[model.bottle], let image = MenuArtwork.tray(name) {
+            image.isTemplate = false
             image.size = NSSize(width: 18, height: 18)
             statusItem?.button?.image = image
             statusItem?.button?.title = ""
         } else {
-            statusItem?.button?.image = NSImage(systemSymbolName: model.bottle == .stored ? "drop.fill" : "drop", accessibilityDescription: "Bottled Reset Rune")
+            let symbol = NSImage(systemSymbolName: model.bottle.fallbackSymbol, accessibilityDescription: "Bottled Reset Rune")
+            symbol?.isTemplate = true
+            statusItem?.button?.image = symbol
         }
         let stateLabel = model.text(model.bottle.rawValue)
         statusItem?.button?.toolTip = "Bottled Reset Rune · \(stateLabel)\(model.mock ? " · \(model.text("mock"))" : "")"
@@ -266,6 +267,8 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
     }
 
     func windowDidResignKey(_ notification: Notification) {
+        // Render the mock screenshot even if another window takes focus first.
+        if model.preview && screenshotPath != nil { return }
         if !quitting { hide() }
     }
 
@@ -282,6 +285,7 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
     }
 
     private func savePreviewScreenshot() {
+        defer { screenshotPath = nil }
         guard let path = screenshotPath, path.hasPrefix("/"), model.preview,
               let view = hostingView, let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
         view.cacheDisplay(in: view.bounds, to: bitmap)

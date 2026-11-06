@@ -26,18 +26,29 @@ final class PanelStateTests: XCTestCase {
         XCTAssertEqual(try state(count: 3).bottle(disconnected: true), .unknown)
     }
 
-    func testDetailsOmitExactlyTheSummaryCredit() throws {
-        let result = try state(credits: [
-            ["id": "second", "expiresAt": 30000], ["id": "first", "expiresAt": 20000],
-            ["id": "same-time", "expiresAt": 20000], ["id": "unknown", "expiresAt": NSNull()]
+    func testExpiredSnapshotDoesNotClaimAnAvailableRuneUntilReadAgain() throws {
+        var result = try state(count: 1, credits: [["id": "first", "expiresAt": 20000]])
+        result.lastCheckedAt = 10000
+        XCTAssertEqual(result.bottle(now: 19999), .stored)
+        XCTAssertEqual(result.bottle(now: 20000), .unknown)
+        result.lastCheckedAt = 21000
+        XCTAssertEqual(result.bottle(now: 21000), .stored)
+    }
+
+    func testDetailLinesDoNotRepeatTheSummaryMinuteOrExpiredAndUnknownRows() throws {
+        let result = try state(count: 5, credits: [
+            ["id": "later", "expiresAt": 125000], ["id": "also-later", "expiresAt": 127000],
+            ["id": "first", "expiresAt": 20000], ["id": "same-minute", "expiresAt": 21000],
+            ["id": "past", "expiresAt": 5000], ["id": "unknown", "expiresAt": NSNull()]
         ])
-        let next = try XCTUnwrap(result.nextCredit(now: 10000))
-        let others = result.otherCredits(now: 10000)
-        XCTAssertEqual(next.expiresAt, 20000)
-        XCTAssertEqual(others.count, 3)
-        XCTAssertFalse(others.contains(where: { $0.id == next.id }))
-        XCTAssertTrue(others.contains(where: { $0.expiresAt == 20000 }))
-        XCTAssertEqual(others.last?.id, "unknown")
+        let now = Date(timeIntervalSince1970: 10)
+        XCTAssertEqual(result.nextCredit(now: 10000)?.id, "first")
+        let laterZH = PanelCopy.date(125000, language: "zh", now: now)
+        let laterEN = PanelCopy.date(125000, language: "en", now: now)
+        XCTAssertEqual(result.otherExpiryLines(now: now, language: "zh"), ["另有 1 枚在同一分钟到期", "\(laterZH) 到期 · 2 枚"])
+        XCTAssertEqual(result.otherExpiryLines(now: now, language: "en"), ["1 more due that minute", "2 expire \(laterEN)"])
+        let single = try state(count: 1, credits: [["id": "first", "expiresAt": 20000]])
+        XCTAssertTrue(single.otherExpiryLines(now: now, language: "zh").isEmpty)
     }
 
     func testExpiredOrInvalidDatesNeverBecomeNext() throws {
@@ -75,8 +86,8 @@ final class PanelStateTests: XCTestCase {
     func testChineseCopyAndEnglishDefaultAreExplicit() {
         XCTAssertEqual(PanelConfig().language, "en")
         XCTAssertEqual(PanelCopy.text("appearance", language: "zh"), "外观")
-        XCTAssertEqual(PanelCopy.text("intro", language: "zh"), "在 Codex 备用重置过期前自动使用")
-        XCTAssertEqual(PanelCopy.status("reset", language: "zh", mock: true), "恢复符已使用 · 模拟兑换")
+        XCTAssertEqual(PanelCopy.text("intro", language: "zh"), "在 Codex 重置神符过期前自动使用")
+        XCTAssertEqual(PanelCopy.status("reset", language: "zh", mock: true), "重置神符已使用 · 模拟兑换")
     }
 
     func testBattleLogIdentitySurvivesPrependingAndDuplicateTimes() throws {

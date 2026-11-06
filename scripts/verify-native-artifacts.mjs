@@ -89,8 +89,16 @@ async function verifyApp(app, arch) {
     binaries.push({ path: path.relative(app, file), arch: expectedArch, sha256: hash(await readFile(file)) });
   }
   const tree = await inventory(app);
-  for (const required of ['bottle.png', 'bottle-empty.png', 'icon.icns', 'trayTemplate.png', 'trayEmptyTemplate.png', 'trayUnknownTemplate.png', 'LICENSE', 'THIRD_PARTY.txt'])
+  const images = Object.entries(manifest.sourceDigests).filter(([source]) =>
+    /^assets\/panel\/[^/]+\.(png|jpg)$/.test(source) || /^assets\/icons\/(icon\.icns|tray[^/]+\.png)$/.test(source));
+  for (const [source, digest] of images) {
+    const resource = `Contents/Resources/${path.basename(source)}`;
+    assert.equal(tree.find(entry => entry.path === resource)?.sha256, digest, `Bundled image must match ${source}`);
+  }
+  for (const required of ['reset-rune.png', 'ARTWORK.md', 'LICENSE', 'THIRD_PARTY.txt'])
     assert.ok(tree.some(item => item.path === `Contents/Resources/${required}`), `Missing resource ${required}`);
+  const artwork = await readFile(path.join(app, 'Contents/Resources/ARTWORK.md'), 'utf8');
+  assert.doesNotMatch(artwork, /\]\((?![a-z]+:|#)[^)]+\)/i, 'Packaged artwork links must resolve outside the repository.');
   assert.ok(!tree.some(item => /(?:^|\/)(?:node_modules|Electron Framework\.framework)(?:\/|$)/.test(item.path)));
   return { version: manifest.version, appSignature, helperSignature, binaries,
     notarization: { app: await assess(app, 'app'), helper: await assess(helper, 'app') },
@@ -142,6 +150,8 @@ try {
     const metadata = JSON.parse(await readFile(path.join(pkg, 'package.json')));
     assert.equal(metadata.name, `reset-rune-darwin-${arch}`); assert.equal(metadata.version, manifest.version);
     assert.deepEqual(metadata.os, ['darwin']); assert.deepEqual(metadata.cpu, [arch]);
+    assert.equal(metadata.license, 'SEE LICENSE IN LICENSE');
+    assert.match(await readFile(path.join(pkg, 'LICENSE'), 'utf8'), /Dota 2 artwork © Valve/);
     assert.ok(!metadata.scripts || !Object.keys(metadata.scripts).length, 'Platform package must have no lifecycle hooks.');
     const record = await verifyApp(path.join(pkg, 'Bottled Reset Rune.app'), arch);
     const source = await verifyApp(path.join(out, arch, 'Bottled Reset Rune.app'), arch);
@@ -179,7 +189,7 @@ try {
   assert.deepEqual((await readdir(mainPackage)).sort(), ['LICENSE', 'README.md', 'cli.cjs', 'package.json']);
   const englishReadme = await readFile(path.join(mainPackage, 'README.md'), 'utf8');
   assert.match(englishReadme, /^# Bottled Reset Rune\n/);
-  assert.match(englishReadme, /Automatically use spare Codex resets before they expire/);
+  assert.ok(englishReadme.includes('Turn your Codex resets into bottled runes.'));
   assert.ok(englishReadme.includes('https://github.com/sufferfml/reset-rune/blob/main/README.zh-CN.md'));
   assert.doesNotMatch(englishReadme, /\]\((?![a-z]+:|#)[^)]+\)/i, 'npm README links must resolve outside the tarball.');
   const modules = path.join(temporary, 'install/node_modules'); await mkdir(modules, { recursive: true });

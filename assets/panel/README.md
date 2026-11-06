@@ -1,10 +1,5 @@
-# Panel artwork
+# Panel art
 
-Original artwork for Bottled Reset Rune, generated with image_gen and resized for the compact native panel. No Valve artwork, game icons or logos are included.
+The inventory row uses the Valve item artwork in `bottle.png` and `bottle-empty.png`. Both are opaque 88 × 64 inventory illustrations. Show the unconfirmed state with the empty plate and a visible status mark.
 
-- `bottle.png`: 384 × 384 bottle containing a green rune.
-- `bottle-empty.png`: matching empty bottle.
-- `icon.png`, `icon-empty.png`: small application-icon variants.
-- `icon-unknown.svg`: neutral bottle geometry for unconfirmed inventory.
-
-Full and empty variants share the same bottle silhouette, brass cap and transparent background. Inventory text accompanies artwork so state is not conveyed by color alone. The desktop icon master and menu bar templates live in [assets/icons](../icons/README.md).
+The expanded inventory contains the custom `reset-rune.png` illustration. `dota-texture.jpg` and `dota-divider.png` provide compact exports of Valve’s website texture and divider. The battle log uses the TI10 checkmark in `dota-success.png` for a successful redemption. Source URLs, attribution and image transformations are recorded in [Artwork and sources](../ARTWORK.md). See the [icon guide](../icons/README.md) for Finder and menu bar representations.

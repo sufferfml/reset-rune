@@ -1,4 +1,4 @@
-// INPUT: Display-only PanelModel and original bundled bottle artwork.
+// INPUT: Display-only PanelModel, Dota 2 bottle art and the project's Reset Rune illustration.
 // OUTPUT: The compact native settings surface; only explicit controls send actions.
 // POS: Native menu UI, described in native/README.md.
 import SwiftUI
@@ -106,7 +106,7 @@ struct PanelView: View {
                     .font(.system(size: 11)).foregroundStyle(palette.muted).textSelection(.enabled)
                 Text(confirmation.kind == "bind"
                      ? (model.language == "zh" ? "绑定后可单独开启自动使用。" : "You can enable automatic use after binding.")
-                     : (model.language == "zh" ? "到期前 \(model.leadLabel(confirmation.lead))开始尝试，每次成功消耗一次备用重置。" : "Attempts start \(model.leadLabel(confirmation.lead)) before expiry. Each successful redemption uses one spare reset."))
+                     : (model.language == "zh" ? "到期前 \(model.leadLabel(confirmation.lead))开始尝试，每次成功消耗一枚重置神符。" : "Attempts start \(model.leadLabel(confirmation.lead)) before expiry. Each successful redemption uses one Reset Rune."))
                     .font(.system(size: 11)).foregroundStyle(palette.muted).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Spacer()
@@ -131,59 +131,53 @@ struct PanelView: View {
                     }
                     Text(model.expiryLabel).font(.system(size: 20, weight: .medium)).tracking(-0.4).monospacedDigit().fixedSize(horizontal: false, vertical: true)
                     if !model.countLabel.isEmpty { Text(model.countLabel).font(.system(size: 11)).foregroundStyle(palette.brass) }
-                    if model.next == nil && model.bottle != .unknown {
-                        Text(model.text(model.bottle == .empty ? "noExpiry" : model.bottle == .stored ? "unknownExpiry" : "unknown"))
-                            .font(.system(size: 11)).foregroundStyle(palette.muted)
-                    }
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.leading, 16).padding(.trailing, 22).padding(.top, 13).padding(.bottom, 15)
-            .frame(minHeight: 134)
+            .padding(.horizontal, 22).padding(.vertical, 14)
             .background(model.panel == "credits" ? palette.well : palette.surface)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(model.text("next"))
-        .accessibilityValue([model.expiryLabel, model.countLabel].joined(separator: ", "))
-        .accessibilityHint(model.language == "zh" ? "展开备用重置明细" : "Show banked reset details")
+        .accessibilityLabel(model.text("rune"))
+        .accessibilityValue([model.expiryLabel, model.countLabel].filter { !$0.isEmpty }.joined(separator: ", "))
+        .accessibilityHint(model.text(model.panel == "credits" ? "hideRunes" : "showRunes"))
     }
 
     private var bottleArtwork: some View {
-        ZStack(alignment: .bottomTrailing) {
-            RoundedRectangle(cornerRadius: 5).fill(palette.socket)
-            if let image = artwork(model.bottle == .stored ? "bottle" : "bottle-empty") {
+        ZStack {
+            palette.socket
+            if let image = MenuArtwork.panel(model.bottle == .stored ? "bottle.png" : "bottle-empty.png") {
                 Image(nsImage: image).resizable().interpolation(.high).scaledToFit()
-                    .frame(width: 86, height: 100).opacity(model.bottle == .unknown ? 0.35 : 1)
-            }
-            if model.bottle == .stored, let count = model.state?.snapshot?.availableCount {
-                Text(String(count)).font(.custom("Iowan Old Style", size: 17).weight(.semibold)).foregroundStyle(palette.text)
-                    .padding(.horizontal, 4).background(palette.socket).padding(.trailing, 4).padding(.bottom, 3)
+                    .opacity(model.bottle == .unknown ? 0.28 : 1)
+            } else if model.bottle != .unknown {
+                Image(systemName: model.bottle.fallbackSymbol).font(.title).foregroundStyle(palette.text)
             }
             if model.bottle == .unknown {
-                Text("?").font(.custom("Georgia", size: 24)).foregroundStyle(palette.muted).frame(maxWidth: .infinity, maxHeight: .infinity)
+                Text("?").font(.system(size: 24, weight: .semibold)).foregroundStyle(palette.text)
             }
-            RoundedRectangle(cornerRadius: 5).strokeBorder(model.config.enabled && model.bottle == .stored ? palette.accent : palette.edge, lineWidth: 1)
-            CornerMarks().stroke(palette.brass, lineWidth: 1)
         }
-        .frame(width: 90, height: 100).accessibilityHidden(true)
+        .frame(width: 88, height: 64)
+        .border(palette.edge, width: 1)
+        .accessibilityHidden(true)
     }
 
     private var creditDetails: some View {
         VStack(alignment: .leading, spacing: 0) {
-            let others = model.bottle == .stored ? (model.state?.otherCredits(now: model.now) ?? []) : []
+            runeDescription
+            let others = model.bottle == .stored ? (model.state?.otherExpiryLines(now: model.visibleNow, language: model.language) ?? []) : []
             if !others.isEmpty {
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(Array(others.enumerated()), id: \.offset) { index, credit in
+                        ForEach(Array(others.enumerated()), id: \.offset) { index, line in
                             if index > 0 { separator }
-                            Text(credit.expiresAt.flatMap { validEpoch($0) ? PanelCopy.date($0, language: model.language, now: model.visibleNow) : nil }.map { model.language == "zh" ? "\($0) 到期" : "Expires \($0)" } ?? model.text("unknownExpiry"))
+                            Text(line)
                                 .font(.system(size: 12)).frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 9)
                         }
                     }
                 }.frame(height: min(CGFloat(others.count) * 36, 150))
             }
-            if model.incompleteInventory || model.next == nil && others.isEmpty {
-                Text(model.text(model.incompleteInventory && model.bottle == .stored ? "partial" : "noDetails"))
+            if model.incompleteInventory && model.next != nil {
+                Text(model.text("partial"))
                     .font(.system(size: 11)).foregroundStyle(palette.muted).padding(.bottom, 9)
             }
             separator
@@ -200,11 +194,13 @@ struct PanelView: View {
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 2).fill(palette.manaTrack)
-                            RoundedRectangle(cornerRadius: 2).fill(palette.mana).frame(width: geometry.size.width * percent / 100)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(LinearGradient(colors: [Color(hex: 0x1056db), Color(hex: 0x73f5fe)], startPoint: .leading, endPoint: .trailing))
+                                .frame(width: geometry.size.width * percent / 100)
                         }
                     }.frame(height: 5).accessibilityLabel(model.text("allowance")).accessibilityValue("\(Int(percent))%")
                 } else { Text(model.text("noAllowance")).font(.system(size: 11)).foregroundStyle(palette.muted).frame(maxWidth: .infinity, alignment: .leading) }
-                if !model.connectionState.isEmpty { Text(model.text("lastReading")).font(.system(size: 11)).foregroundStyle(palette.muted).frame(maxWidth: .infinity, alignment: .leading) }
+                if !model.connectionState.isEmpty, model.state?.snapshot?.remainingPercent != nil { Text(model.text("lastReading")).font(.system(size: 11)).foregroundStyle(palette.muted).frame(maxWidth: .infinity, alignment: .leading) }
             }.padding(.vertical, 11)
             if model.config.enabled, model.next != nil, model.connectionState.isEmpty,
                ["ready", "waiting", "outside-window"].contains(model.state?.status ?? "") {
@@ -217,6 +213,36 @@ struct PanelView: View {
                 }.padding(.vertical, 11)
             }
         }.padding(.horizontal, 22).padding(.bottom, 13)
+    }
+
+    private var runeDescription: some View {
+        HStack(spacing: 12) {
+            if let image = MenuArtwork.panel("reset-rune.png") {
+                Image(nsImage: image).resizable().interpolation(.high).scaledToFit()
+                    .frame(width: 60, height: 60).accessibilityHidden(true)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(model.text("rune")).font(.system(size: 14, weight: .semibold))
+                Text(model.text("runeEffect")).font(.system(size: 12)).foregroundStyle(palette.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            palette.well.overlay {
+                if let texture = MenuArtwork.panel("dota-texture.jpg") {
+                    Image(nsImage: texture).resizable().scaledToFill()
+                        .opacity(colorScheme == .dark ? 0.62 : 0.04)
+                }
+            }.clipped().accessibilityHidden(true)
+        }
+        .overlay(alignment: .bottom) {
+            if let divider = MenuArtwork.panel("dota-divider.png") {
+                Image(nsImage: divider).resizable().scaledToFit().accessibilityHidden(true)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var footer: some View {
@@ -311,19 +337,6 @@ struct PanelView: View {
         }.frame(height: 40)
     }
 
-    private func artwork(_ name: String) -> NSImage? {
-        guard let resource = Bundle.main.resourceURL else { return nil }
-        return NSImage(contentsOf: resource.appendingPathComponent("\(name).png"))
-    }
-}
-
-private struct CornerMarks: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: 0, y: 10)); path.addLine(to: .zero); path.addLine(to: CGPoint(x: 10, y: 0))
-        path.move(to: CGPoint(x: rect.width - 10, y: rect.height)); path.addLine(to: CGPoint(x: rect.width, y: rect.height)); path.addLine(to: CGPoint(x: rect.width, y: rect.height - 10))
-        return path
-    }
 }
 
 private struct EventRow: View {
@@ -368,7 +381,11 @@ private struct EventRow: View {
     }
     private func eventLabel(disclosure: Bool) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Image(systemName: symbol).font(.system(size: event.type == "checked" ? 4 : 10, weight: .medium)).foregroundStyle(color).frame(width: 11)
+            if event.type == "reset", let image = MenuArtwork.panel("dota-success.png") {
+                Image(nsImage: image).resizable().scaledToFit().frame(width: 11, height: 11).accessibilityHidden(true)
+            } else {
+                Image(systemName: symbol).font(.system(size: event.type == "checked" ? 4 : 10, weight: .medium)).foregroundStyle(color).frame(width: 11).accessibilityHidden(true)
+            }
             Text(PanelCopy.event(event.type, language: model.language, mock: model.mock)).font(.system(size: 12)).foregroundStyle(event.type == "reset" ? palette.accent : palette.text).fixedSize(horizontal: false, vertical: true)
             if disclosure { Spacer(minLength: 1); Image(systemName: expanded ? "chevron.down" : "chevron.right").font(.system(size: 9)).foregroundStyle(palette.brass) }
         }

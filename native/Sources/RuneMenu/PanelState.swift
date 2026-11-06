@@ -52,12 +52,27 @@ struct PanelState: Decodable {
     var events: [PanelEvent]
     var lastCheckedAt: Double?
 
-    enum Bottle: String { case stored, empty, unknown }
+    enum Bottle: String {
+        case stored, empty, unknown
 
-    func bottle(disconnected: Bool = false) -> Bottle {
+        var fallbackSymbol: String {
+            switch self {
+            case .stored: return "drop.fill"
+            case .empty: return "drop"
+            case .unknown: return "questionmark"
+            }
+        }
+    }
+
+    func bottle(disconnected: Bool = false, now: Double = Date().timeIntervalSince1970 * 1000) -> Bottle {
         let uncertain: Set<String> = ["error", "blocked", "identity-unknown", "identity-changed", "pending", "unconfirmed", "reset-unverified", "no-credit"]
         guard !disconnected, !uncertain.contains(status), let count = snapshot?.availableCount, count >= 0 else { return .unknown }
-        return count > 0 ? .stored : .empty
+        guard count > 0 else { return .empty }
+        if let checked = lastCheckedAt, snapshot?.credits?.contains(where: { credit in
+            guard let expiry = credit.expiresAt, validEpoch(expiry) else { return false }
+            return checked < expiry && expiry <= now
+        }) == true { return .unknown }
+        return .stored
     }
 
     func nextCredit(now: Double) -> PanelCredit? {
@@ -65,10 +80,22 @@ struct PanelState: Decodable {
             .min { $0.expiresAt! < $1.expiresAt! }
     }
 
-    func otherCredits(now: Double) -> [PanelCredit] {
-        var rows = (snapshot?.credits ?? []).sorted { ($0.expiresAt ?? .infinity) < ($1.expiresAt ?? .infinity) }
-        if let next = nextCredit(now: now), let index = rows.firstIndex(where: { $0.id == next.id }) { rows.remove(at: index) }
-        return rows
+    func otherExpiryLines(now: Date, language: String) -> [String] {
+        let future = (snapshot?.credits ?? []).compactMap(\.expiresAt)
+            .filter { validEpoch($0) && $0 > now.timeIntervalSince1970 * 1000 }
+        let byMinute = Dictionary(grouping: future) { Int64($0 / 60_000) }
+        let minutes = byMinute.keys.sorted()
+        return minutes.compactMap { minute in
+            guard let expiries = byMinute[minute], let expiry = expiries.first else { return nil }
+            if minute == minutes.first {
+                let extra = expiries.count - 1
+                guard extra > 0 else { return nil }
+                return language == "zh" ? "另有 \(extra) 枚在同一分钟到期" : "\(extra) more due that minute"
+            }
+            let date = PanelCopy.date(expiry, language: language, now: now)
+            if expiries.count == 1 { return language == "zh" ? "\(date) 到期" : "Expires \(date)" }
+            return language == "zh" ? "\(date) 到期 · \(expiries.count) 枚" : "\(expiries.count) expire \(date)"
+        }
     }
 
     func recentEvents() -> [PanelEventRow] {
@@ -90,23 +117,24 @@ func validEpoch(_ value: Double?) -> Bool {
 enum PanelCopy {
     static func text(_ key: String, language: String) -> String {
         let copy: [String: (String, String)] = [
-            "intro": ("Automatically use spare Codex resets before they expire.", "在 Codex 备用重置过期前自动使用"),
+            "intro": ("Automatically use Codex Reset Runes before they expire.", "在 Codex 重置神符过期前自动使用"),
             "automatic": ("Automatic use", "自动使用"),
             "connecting": ("Connecting to Bottled Reset Rune…", "正在连接 Bottled Reset Rune…"),
             "disconnected": ("Local service unavailable. Check the connection.", "本地服务暂不可用，请检查连接。"),
             "stale": ("Connection interrupted. Showing the last reading.", "连接中断，显示上次读数。"),
             "mock": ("Simulation", "模拟模式"),
-            "next": ("Rune expires", "恢复符到期"),
-            "knownNext": ("Next known rune expiry", "最近已知恢复符到期"),
-            "fading": ("Rune expires soon", "恢复符即将到期"),
-            "bottle": ("Bottled regeneration", "瓶中恢复符"),
+            "next": ("Next expiry", "最近到期"),
+            "knownNext": ("Next known expiry", "最近已知到期"),
+            "fading": ("Expiring soon", "即将到期"),
+            "rune": ("Reset Rune", "重置神符"),
+            "runeEffect": ("Resets eligible Codex usage limits when redeemed.", "兑换后可重置符合条件的 Codex 额度。"),
+            "showRunes": ("Show Reset Rune details", "展开重置神符明细"),
+            "hideRunes": ("Hide Reset Rune details", "收起重置神符明细"),
             "empty": ("Empty bottle", "魔瓶已空"),
-            "stored": ("Runeeration stored", "已储存恢复符"),
+            "stored": ("Reset Rune stored", "已储存重置神符"),
             "unknown": ("Inventory unconfirmed", "库存待确认"),
             "unknownExpiry": ("Expiry unavailable", "到期时间未知"),
-            "noExpiry": ("Waiting for a spare reset", "等待新的备用重置"),
-            "partial": ("Some resets have no expiry details.", "部分备用重置缺少到期信息。"),
-            "noDetails": ("No reset details available.", "暂无备用重置明细。"),
+            "partial": ("Some Reset Runes have no expiry details.", "部分重置神符缺少到期信息。"),
             "allowance": ("Codex allowance left", "Codex 剩余额度"),
             "noAllowance": ("No allowance reading", "暂无额度读数"),
             "lastReading": ("Last available reading", "上次读数"),
@@ -160,20 +188,20 @@ enum PanelCopy {
             "disabled": ("Off · Monitoring only", "未开启 · 仅监控"),
             "waiting": ("Enabled · Waiting for expiry", "已开启 · 等待进入临期时段"),
             "outside-window": ("Enabled · Waiting for expiry", "已开启 · 等待进入临期时段"),
-            "no-credits": ("No banked resets available", "当前没有备用重置"),
-            "missing-expiry": ("Waiting for reset expiry details", "等待备用重置到期明细"),
+            "no-credits": ("Waiting for a Reset Rune", "等待新的重置神符"),
+            "missing-expiry": ("Waiting for Reset Rune expiry details", "等待重置神符到期明细"),
             "identity-unknown": ("Account or workspace unavailable", "无法确认账号或工作区"),
             "identity-changed": ("Paused · Account or workspace changed", "已暂停 · 账号或工作区已变更"),
             "readonly": ("Monitoring only in this build", "此版本仅监控"),
             "blocked": ("Paused · Check status and recent activity", "已暂停 · 请检查状态和近期记录"),
             "pending": ("Attempt result unconfirmed", "尝试结果未确认"),
             "unconfirmed": ("Attempt result unconfirmed", "尝试结果未确认"),
-            "reset": mock ? ("Rune used · Simulated reset", "恢复符已使用 · 模拟兑换") : ("Rune used · Reset redeemed", "恢复符已使用 · 重置完成"),
+            "reset": mock ? ("Reset Rune used · Simulated", "重置神符已使用 · 模拟兑换") : ("Reset Rune redeemed", "重置神符已兑换"),
             "reset-unverified": ("Reset redeemed · Allowance unconfirmed", "已兑换 · 额度待读回"),
-            "no-credit": ("Selected reset unavailable", "指定备用次数已不可用"),
+            "no-credit": ("Selected Reset Rune unavailable", "选中的重置神符已不可用"),
             "nothing-to-reset": ("No eligible reset window", "当前无可重置窗口"),
             "rejected": ("No eligible reset window", "当前无可重置窗口"),
-            "missed": ("Reset expiry missed", "已错过到期时段"),
+            "missed": ("Reset Rune expired", "已错过到期时段"),
             "error": ("Codex status unavailable", "Codex 状态暂不可用"),
             "runtime-missing": ("Codex runtime unavailable. Check the connection.", "找不到 Codex 运行时，请检查连接。"),
             "runtime-incompatible": ("The Codex runtime is incompatible.", "当前 Codex 运行时不兼容。"),
@@ -199,8 +227,8 @@ enum PanelCopy {
         let entries: [String: (String, String)] = [
             "reset-unverified": ("A successful redemption was recorded. The updated allowance was still pending at this point.", "已收到成功兑换的回执，当时尚未读回更新后的额度。"),
             "nothing-to-reset": ("The attempt returned no eligible allowance window.", "本次尝试返回的结果是没有符合条件的额度窗口。"),
-            "unconfirmed": ("The attempt had no confirmed outcome. Whether a spare reset was consumed is unknown.", "这次尝试未能确认结果，是否消耗了备用次数仍待核实。"),
-            "missed": ("The attempt window ended without a recorded redemption.", "这次备用重置的尝试时段已结束，未记录成功兑换。")
+            "unconfirmed": ("The attempt had no confirmed outcome. Whether a Reset Rune was consumed is unknown.", "这次尝试未能确认结果，是否消耗了重置神符仍待核实。"),
+            "missed": ("The attempt window ended without a recorded redemption.", "这枚重置神符的尝试时段已结束，未记录成功兑换。")
         ]
         guard let pair = entries[type] else { return nil }
         return language == "zh" ? pair.1 : pair.0

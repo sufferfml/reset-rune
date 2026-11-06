@@ -95,7 +95,9 @@ public func runService(mock:Bool) async throws {
     let store=try FileStateStore(directory:directory)
     let source:ResetSource=mock ? try MockSource(directory:directory):CodexSource(allowConsume:true)
     let engine=try RuneEngine(source:source,store:store,onConfig:{ enabled in try NativeRuntime.startup(enabled,directory:directory,mock:mock) },onEvent:{ _, language in
-        let text=mock ? (language=="zh" ? "恢复符已使用，模拟重置完成。":"Rune used. Simulated reset completed.") : (language=="zh" ? "恢复符已使用，已兑换一次 Codex 备用重置。":"Rune used. A spare Codex reset was redeemed.")
+        let text = mock
+            ? (language == "zh" ? "已使用一枚重置神符，模拟重置完成。" : "Reset Rune used. Simulated reset complete.")
+            : (language == "zh" ? "已使用一枚重置神符，Codex 额度已重置。" : "Reset Rune used. Your Codex quota was reset.")
         _=try? NativeRuntime.run("/usr/bin/osascript",["-e","display notification \"\(text)\" with title \"Bottled Reset Rune\""],timeout:3)
     })
     let coordinator=ServiceCoordinator(engine:engine)

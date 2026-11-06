@@ -202,7 +202,7 @@ final class PanelModel: ObservableObject {
     var config: PanelConfig { state?.config ?? PanelConfig() }
     var dataDirectory: URL { client.directory }
     var language: String { config.language == "zh" ? "zh" : "en" }
-    var bottle: PanelState.Bottle { state?.bottle(disconnected: !connectionState.isEmpty) ?? .unknown }
+    var bottle: PanelState.Bottle { state?.bottle(disconnected: !connectionState.isEmpty, now: now) ?? .unknown }
     var canAct: Bool { state != nil && connectionState.isEmpty && pending == nil && !preview }
     var now: Double { visibleNow.timeIntervalSince1970 * 1000 }
     var next: PanelCredit? { bottle == .stored ? state?.nextCredit(now: now) : nil }
@@ -223,15 +223,15 @@ final class PanelModel: ObservableObject {
         return PanelCopy.status(key, language: language, mock: mock)
     }
     var countLabel: String {
-        guard bottle != .unknown, let count = state?.snapshot?.availableCount else { return "" }
-        return language == "zh" ? "\(count) 次备用重置" : "\(count) spare reset\(count == 1 ? "" : "s")"
+        guard bottle == .stored, let count = state?.snapshot?.availableCount else { return "" }
+        return language == "zh" ? "\(count) 枚重置神符" : "\(count) Reset Rune\(count == 1 ? "" : "s")"
     }
     var expiryLabel: String {
-        guard let expiry = next?.expiresAt else { return text(bottle.rawValue) }
+        guard let expiry = next?.expiresAt else { return text(bottle == .stored ? "unknownExpiry" : bottle.rawValue) }
         return PanelCopy.date(expiry, language: language, now: visibleNow)
     }
     var expiryHeading: String {
-        guard bottle == .stored else { return text("bottle") }
+        guard next != nil else { return text("rune") }
         return text(isExpiring ? "fading" : incompleteInventory ? "knownNext" : "next")
     }
     var incompleteInventory: Bool {
@@ -379,6 +379,7 @@ final class PanelModel: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
             guard !Task.isCancelled, let self, visible else { return }
             visibleNow = Date()
+            presentationChanged()
             scheduleVisibleBoundary()
         }
     }

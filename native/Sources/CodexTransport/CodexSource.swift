@@ -216,7 +216,7 @@ private final class AppServerSession: @unchecked Sendable {
                     }
                     do { try self.process.run() } catch { self.finish("read-failed"); return }
                     self.startDeadline()
-                    self.send(["id": 1, "method": "initialize", "params": ["clientInfo": ["name": "reset-rune", "title": "Bottled Reset Rune", "version": "0.1.0"], "capabilities": ["experimentalApi": true]]])
+                    self.send(["id": 1, "method": "initialize", "params": ["clientInfo": ["name": "reset-rune", "title": "Bottled Reset Rune", "version": "0.1.1"], "capabilities": ["experimentalApi": true]]])
                 }
             }
         }, onCancel: { self.cancel() })

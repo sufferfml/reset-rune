@@ -9,7 +9,7 @@
 ### 已确认的基础
 
 - 当前产品使用 Swift / AppKit / SwiftUI、launchd 和 macOS 文件接口；这些代码不能直接打成 Windows 可执行文件。
-- 可复用的内容是业务规则、App Server 合同、合成测试向量、原创素材和双语信息结构；`test/reference` 只供验证，不是生产 Node 后台。
+- 可复用的内容是业务规则、App Server 合同、合成测试向量、物品美术和双语信息结构；`test/reference` 只供验证，不是生产 Node 后台。
 - 上游 Codex 0.153.0 已提供 Windows x64、ARM64 的原生程序。使用该版本的 `codex.exe app-server`，不需要自己重新实现登录或私有 HTTP 接口。[固定版本发行](https://github.com/openai/codex/releases/tag/rust-v0.153.0) · [npm 包装器](https://github.com/openai/codex/blob/rust-v0.153.0/codex-cli/bin/codex.js)
 
 ### 拟定选型
@@ -212,7 +212,7 @@ WSL 适配解决登录和运行时所在的位置，不负责截获 DSH 消耗�
 面板约 368 DIP，沿用魔瓶、石材、铜色和绿色符文。Windows 采用自己的托盘定位、字体和控件习惯，不复制 macOS 窗口按钮或系统字体假设。
 
 - 主界面仅显示用途说明、自动使用、最近到期 / 次数和账号；明细、设置、战报就地互斥展开。
-- 菜单栏对应 Windows 通知区域；有符图标采用明显填充，空瓶使用轮廓，未知增加符号，并配可读 tooltip，不依赖细小旋纹或颜色差异。
+- Windows 通知区域使用来自 Dota 2 物品图的有符和空瓶图标，待确认有独立标记，tooltip 说明当前状态。展开明细时显示本项目的重置神符图。
 - 按钮、选择框和焦点保留真实控件语义；魔瓶、蓝量条、分隔装饰可绘制。深色绘制不得依赖未文档化的系统函数序号；必要的控件绘制仍保留键盘及辅助功能角色。
 - 默认 English，可选简体中文；外观 System / Light / Dark。高对比与系统可访问性优先于主题装饰；切换设置不修改自动使用授权。
 - 覆盖 Tab / Shift+Tab、Space、Enter、Escape、焦点返回、Narrator、200% 文字放大、多屏及 100–300% DPI。Explorer 重启后重建托盘图标，避免丢失入口。

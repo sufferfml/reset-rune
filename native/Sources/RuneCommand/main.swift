@@ -15,7 +15,7 @@ private final class LocalSessionDelegate:NSObject,URLSessionTaskDelegate {
     static func execute() async throws {
         let args=Array(CommandLine.arguments.dropFirst()), mock=args.contains("--mock")
         let words=args.filter { $0 != "--mock" }, cmd=words.first ?? "--help", params=Array(words.dropFirst())
-        if ["help","--help","-h"].contains(cmd) { print("Bottled Reset Rune 0.1.0 (native macOS)\n  reset-rune [--mock] status | start | stop | restart | upgrade | refresh | doctor | ui\n  reset-rune enable --confirm | bind --confirm | pause\n  reset-rune config <lead|language|appearance|startup|notify> <value>\n  reset-rune uninstall-service | rollback\nAutomatic use requires explicit confirmation. --mock uses separate synthetic data."); return }
+        if ["help","--help","-h"].contains(cmd) { print("Bottled Reset Rune \(NativeRuntime.version) (native macOS)\n  reset-rune [--mock] status | start | stop | restart | upgrade | refresh | doctor | ui\n  reset-rune enable --confirm | bind --confirm | pause\n  reset-rune config <lead|language|appearance|startup|notify> <value>\n  reset-rune uninstall-service | rollback\nAutomatic use requires explicit confirmation. --mock uses separate synthetic data."); return }
         if cmd=="--version" { print(NativeRuntime.version); return }
         let directory=Paths.directory(mock:mock)
         if cmd=="--check-state" { _=try RuneState.validate(FileStateStore(directory:directory).read());print("compatible-v1");return }

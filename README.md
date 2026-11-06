@@ -4,9 +4,11 @@
 
 **Turn your Codex resets into bottled runes.**
 
-Bottled Reset Rune is a lightweight, open-source macOS menu bar utility that reuses your local Codex login and, once you enable automatic use, attempts to use spare resets before they expire.
+Bottled Reset Rune is a lightweight, open-source macOS menu bar utility. Each **Reset Rune** represents one spare Codex reset. The app reuses your local Codex login and, once you turn on automatic use, tries to use each rune before it expires.
 
-The name comes from Dota 2's bottled regeneration rune: a recovery opportunity saved for later, used before it disappears.
+The name comes from the Regeneration Rune you can store in a Bottle in Dota 2.
+
+<img src="https://raw.githubusercontent.com/sufferfml/reset-rune/main/design/previews/reset-rune-en.png" alt="Expanded Reset Rune details with simulated inventory and Codex usage" width="368">
 
 ## Install
 
@@ -14,8 +16,8 @@ Requires **macOS 13 or later** and the official **Codex CLI 0.153.0**, installed
 
 ### macOS app
 
-- [Download for Apple Silicon](https://github.com/sufferfml/reset-rune/releases/download/v0.1.0/Bottled-Reset-Rune-0.1.0-arm64.dmg)
-- [Download for Intel](https://github.com/sufferfml/reset-rune/releases/download/v0.1.0/Bottled-Reset-Rune-0.1.0-x64.dmg)
+- [Download for Apple Silicon](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-arm64.dmg)
+- [Download for Intel](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-x64.dmg)
 
 Open the DMG, drag Bottled Reset Rune into Applications, then open the app. Both versions are Developer ID signed and Apple notarized.
 
@@ -28,7 +30,7 @@ npm install -g reset-rune
 reset-rune ui
 ```
 
-Both installation methods open the same native interface. The background service runs independently and does not keep Node.js running.
+The npm package is at v0.1.0. Download the GitHub DMG above for the v0.1.1 interface shown here.
 
 ## Get started
 
@@ -40,7 +42,7 @@ Automatic use is off by default. Turn it off at any time to pause. Closing the p
 
 ## Features
 
-- **Bottle status**: See your spare reset inventory and next expiry. Click to view details.
+- **The bottle** shows how many Reset Runes you have and when the next one expires. Click the bottle to see the rune artwork and inventory details.
 - **Lightweight scheduling**: A known earliest expiry is scheduled directly. Empty inventory or incomplete expiry details are checked periodically.
 - **Quota and battle log**: Expand the panel to see quota, attempt timing and activity while keeping the main view compact.
 - **Language and appearance**: English by default, with Simplified Chinese available. Choose system, light or dark appearance.
@@ -80,4 +82,4 @@ Windows support is planned and has not been released. See the [development plan]
 
 ## License
 
-[MIT](LICENSE). Theme artwork is original. This project is not affiliated with OpenAI or Valve.
+The project code and its custom Reset Rune illustration use the [MIT license](LICENSE). Dota 2 artwork, including the Bottle icons adapted for macOS, is excluded from that license. Valve and its licensors retain the rights to it. See the [artwork credits and sources](assets/ARTWORK.md). Bottled Reset Rune is an independent project.

@@ -4,9 +4,11 @@
 
 **把codex的重置变成神符装进魔瓶**
 
-Bottled Reset Rune 是一款轻量、开源的 macOS 菜单栏工具，复用本机 Codex 登录，在你开启自动使用后，按设定的提前量尝试使用即将到期的备用重置。
+Bottled Reset Rune 是一款轻量、开源的 macOS 菜单栏工具。每枚**重置神符**代表一次 Codex 备用重置。应用复用本机 Codex 登录，你开启自动使用后，它会按设定的提前量尝试使用即将到期的神符。
 
-名字来自 Dota 2 魔瓶里存着的恢复符：手里存着一次恢复机会，在它消失前用掉。
+名字取自 Dota 2 中可以装进魔瓶的恢复神符。
+
+<img src="https://raw.githubusercontent.com/sufferfml/reset-rune/main/design/previews/reset-rune-zh-CN.png" alt="重置神符明细展开后的中文界面，库存与 Codex 额度均为模拟数据" width="368">
 
 ## 安装
 
@@ -14,8 +16,8 @@ Bottled Reset Rune 是一款轻量、开源的 macOS 菜单栏工具，复用本
 
 ### macOS 应用
 
-- [下载 Apple 芯片版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.0/Bottled-Reset-Rune-0.1.0-arm64.dmg)
-- [下载 Intel 版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.0/Bottled-Reset-Rune-0.1.0-x64.dmg)
+- [下载 Apple 芯片版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-arm64.dmg)
+- [下载 Intel 版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.1/Bottled-Reset-Rune-0.1.1-x64.dmg)
 
 打开 DMG，将 Bottled Reset Rune 拖入“应用程序”，然后打开应用。两个版本均已通过 Developer ID 签名和 Apple 公证。
 
@@ -28,7 +30,7 @@ npm install -g reset-rune
 reset-rune ui
 ```
 
-两种安装方式打开相同的原生界面。后台服务独立运行，不需要 Node.js 常驻。
+npm 当前提供 v0.1.0。上方的 GitHub DMG 提供图中的 v0.1.1 界面。
 
 ## 开始使用
 
@@ -40,7 +42,7 @@ reset-rune ui
 
 ## 功能
 
-- **魔瓶状态**：显示备用重置库存和最近到期时间，点击可查看明细。
+- **魔瓶状态**显示重置神符数量和最近到期时间。点击魔瓶可查看神符图和库存明细。
 - **轻量调度**：已知最早到期时间时直接安排任务；库存为空或到期信息不完整时，定期重新检查。
 - **额度与战报**：在展开区域查看额度、尝试时机和使用记录，主面板保持简洁。
 - **语言与外观**：默认英文，可选简体中文；支持跟随系统、浅色和深色外观。
@@ -80,4 +82,4 @@ Windows 版本尚未发布，开发范围与里程碑见[开发计划](docs/wind
 
 ## 许可证
 
-[MIT](LICENSE)。主题美术为原创；本项目与 OpenAI 或 Valve 无隶属关系。
+项目代码与专为本项目设计的重置神符图采用 [MIT 许可证](LICENSE)。Dota 2 美术（含为 macOS 适配的魔瓶图标）排除在本项目的 MIT 授权范围之外，其权利归 Valve 及相应权利人所有。详见[美术署名与来源](assets/ARTWORK.md)。Bottled Reset Rune 是独立项目。
