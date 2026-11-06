@@ -1,0 +1,4349 @@
+[
+  {
+    "name": "mock-window-and-manual",
+    "mode": "mock",
+    "steps": [
+      {
+        "op": "configure",
+        "patch": {
+          "enabled": true
+        },
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "at": 109.99,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "outside-window",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6599400
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "at": 110,
+        "manual": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "checked"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "checked"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "reset",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6600000,
+                "type": "checked"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6600000,
+                "type": "checked"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "outside-window",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6600000,
+                "type": "checked"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "b",
+              "expiresAt": 7500000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6600000,
+                "type": "checked"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      }
+    ],
+    "initialSnapshot": {
+      "identity": {
+        "accountId": "account-a",
+        "scope": "workspace-a",
+        "email": "demo@example.test"
+      },
+      "availableCount": 2,
+      "remainingPercent": 90,
+      "credits": [
+        {
+          "id": "a",
+          "expiresAt": 7200000
+        },
+        {
+          "id": "b",
+          "expiresAt": 7500000
+        }
+      ]
+    }
+  },
+  {
+    "name": "live-binding-roundtrip",
+    "mode": "live",
+    "steps": [
+      {
+        "op": "tick",
+        "manual": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "disabled",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": null,
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "configure",
+        "patch": {
+          "enabled": true
+        },
+        "autoConsent": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "outside-window",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "source",
+        "scope": "other",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "outside-window",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "other",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "3257e7988b4cb72daa5ca2806aaabb2c58eb89c6b8961a345eff1c5cdba9b775",
+            "status": "identity-changed",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": null
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "source",
+        "scope": "workspace-a",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "other",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "3257e7988b4cb72daa5ca2806aaabb2c58eb89c6b8961a345eff1c5cdba9b775",
+            "status": "identity-changed",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": null
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "restart",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": null,
+            "consent": null,
+            "status": "idle",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": null
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": null
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "disabled",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "paused"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": null
+          },
+          "requests": []
+        }
+      }
+    ],
+    "initialSnapshot": {
+      "identity": {
+        "accountId": "account-a",
+        "scope": "workspace-a",
+        "email": "demo@example.test"
+      },
+      "availableCount": 2,
+      "remainingPercent": 90,
+      "credits": [
+        {
+          "id": "a",
+          "expiresAt": 7200000
+        },
+        {
+          "id": "b",
+          "expiresAt": 7500000
+        }
+      ]
+    }
+  },
+  {
+    "name": "live-lost-response-negative",
+    "mode": "live",
+    "steps": [
+      {
+        "op": "tick",
+        "manual": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "disabled",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": null,
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "configure",
+        "patch": {
+          "enabled": true
+        },
+        "autoConsent": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "source",
+        "loseResponse": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "at": 110,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "pending",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "intent",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "restart",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": null,
+            "consent": null,
+            "status": "idle",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": null
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "intent",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "source",
+        "loseResponse": false,
+        "result": "no-credit",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": null,
+            "consent": null,
+            "status": "idle",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": null
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "intent",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "at": 111,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "unconfirmed",
+            "error": null,
+            "events": [
+              {
+                "at": 6660000,
+                "type": "unconfirmed"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6660000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "unconfirmed",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6660000
+              }
+            ],
+            "events": [
+              {
+                "at": 6660000,
+                "type": "unconfirmed"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            },
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": true
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "blocked",
+            "error": null,
+            "events": [
+              {
+                "at": 6660000,
+                "type": "unconfirmed"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6660000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "unconfirmed",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6660000
+              }
+            ],
+            "events": [
+              {
+                "at": 6660000,
+                "type": "unconfirmed"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            },
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": true
+            }
+          ]
+        }
+      }
+    ],
+    "initialSnapshot": {
+      "identity": {
+        "accountId": "account-a",
+        "scope": "workspace-a",
+        "email": "demo@example.test"
+      },
+      "availableCount": 2,
+      "remainingPercent": 90,
+      "credits": [
+        {
+          "id": "a",
+          "expiresAt": 7200000
+        },
+        {
+          "id": "b",
+          "expiresAt": 7500000
+        }
+      ]
+    }
+  },
+  {
+    "name": "live-no-credit-inventory-gate",
+    "mode": "live",
+    "steps": [
+      {
+        "op": "tick",
+        "manual": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "disabled",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": false,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": null,
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "configure",
+        "patch": {
+          "enabled": true
+        },
+        "autoConsent": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "source",
+        "result": "no-credit",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "at": 116,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "no-credit",
+            "error": null,
+            "events": [
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6960000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "no-credit",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6960000
+              }
+            ],
+            "events": [
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "no-credit",
+            "error": null,
+            "events": [
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6960000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "no-credit",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6960000
+              }
+            ],
+            "events": [
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "source",
+        "dropFirst": true,
+        "result": "reset",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "no-credit",
+            "error": null,
+            "events": [
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6960000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "no-credit",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6960000
+              }
+            ],
+            "events": [
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "live",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 1,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": "8ebd404ec93de37788eb3590633d79dbd55a0e188f23e2bb3dd2b1c23e06f909",
+            "status": "reset",
+            "error": null,
+            "events": [
+              {
+                "at": 6960000,
+                "type": "reset"
+              },
+              {
+                "at": 6960000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "lastCheckedAt": 6960000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "no-credit",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6960000
+              },
+              {
+                "id": "b",
+                "expiresAt": 7500000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-2",
+                "stage": "reset",
+                "revision": "90",
+                "inventoryRevision": "db0a5b61c7edc775d4be336788cccc4001e207ab43849fdb162c088758dfb9ba",
+                "attemptedAt": 6960000
+              }
+            ],
+            "events": [
+              {
+                "at": 6960000,
+                "type": "reset"
+              },
+              {
+                "at": 6960000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6960000,
+                "type": "no-credit"
+              },
+              {
+                "at": 6960000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              },
+              {
+                "at": 6000000,
+                "type": "checked"
+              }
+            ],
+            "liveAuthorization": "d6a4dc53878d7827e6dec9ae612869b27f58be82d5a96863493777571aef416e"
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            },
+            {
+              "id": "b",
+              "key": "key-2",
+              "startsAt": 6900000,
+              "expiresAt": 7500000,
+              "recovering": false
+            }
+          ]
+        }
+      }
+    ],
+    "initialSnapshot": {
+      "identity": {
+        "accountId": "account-a",
+        "scope": "workspace-a",
+        "email": "demo@example.test"
+      },
+      "availableCount": 2,
+      "remainingPercent": 90,
+      "credits": [
+        {
+          "id": "a",
+          "expiresAt": 7200000
+        },
+        {
+          "id": "b",
+          "expiresAt": 7500000
+        }
+      ]
+    }
+  },
+  {
+    "name": "rejected-usage-revision",
+    "mode": "mock",
+    "steps": [
+      {
+        "op": "configure",
+        "patch": {
+          "enabled": true
+        },
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "source",
+        "result": "nothing-to-reset",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "at": 110,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "nothing-to-reset",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "nothing-to-reset",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "rejected",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "nothing-to-reset",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "source",
+        "remainingPercent": 89,
+        "result": "reset",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "rejected",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": {
+              "id": "a",
+              "expiresAt": 7200000,
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              }
+            },
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "nothing-to-reset",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 89,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "reset",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset",
+                "revision": "89",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6600000,
+                "type": "nothing-to-reset"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            },
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      }
+    ],
+    "initialSnapshot": {
+      "identity": {
+        "accountId": "account-a",
+        "scope": "workspace-a",
+        "email": "demo@example.test"
+      },
+      "availableCount": 2,
+      "remainingPercent": 90,
+      "credits": [
+        {
+          "id": "a",
+          "expiresAt": 7200000
+        },
+        {
+          "id": "b",
+          "expiresAt": 7500000
+        }
+      ]
+    }
+  },
+  {
+    "name": "confirmed-receipt-restart",
+    "mode": "mock",
+    "steps": [
+      {
+        "op": "configure",
+        "patch": {
+          "enabled": true
+        },
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "source",
+        "failAfterConsume": true,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "ready",
+            "error": null,
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6000000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [],
+            "events": [
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": []
+        }
+      },
+      {
+        "op": "tick",
+        "at": 110,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": null,
+            "consent": null,
+            "status": "reset-unverified",
+            "error": "read-failed",
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset-unverified",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "source",
+        "failRead": false,
+        "failAfterConsume": false,
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": null,
+            "consent": null,
+            "status": "reset-unverified",
+            "error": "read-failed",
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset-unverified",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "restart",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": null,
+            "consent": null,
+            "status": "idle",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": null
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset-unverified",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      },
+      {
+        "op": "tick",
+        "expected": {
+          "view": {
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "mode": "mock",
+            "snapshot": {
+              "identity": {
+                "accountId": "account-a",
+                "scope": "workspace-a",
+                "email": "demo@example.test"
+              },
+              "availableCount": 2,
+              "remainingPercent": 90,
+              "credits": [
+                {
+                  "id": "a",
+                  "expiresAt": 7200000
+                },
+                {
+                  "id": "b",
+                  "expiresAt": 7500000
+                }
+              ]
+            },
+            "consent": null,
+            "status": "reset",
+            "error": null,
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ],
+            "lastCheckedAt": 6600000
+          },
+          "state": {
+            "version": 1,
+            "config": {
+              "enabled": true,
+              "lead": 10,
+              "language": "en",
+              "appearance": "system",
+              "startup": false,
+              "notify": true
+            },
+            "binding": {
+              "accountId": "account-a",
+              "scope": "workspace-a",
+              "email": "demo@example.test"
+            },
+            "plan": null,
+            "operations": [
+              {
+                "id": "a",
+                "expiresAt": 7200000,
+                "identity": {
+                  "accountId": "account-a",
+                  "scope": "workspace-a",
+                  "email": "demo@example.test"
+                },
+                "key": "key-1",
+                "stage": "reset",
+                "revision": "90",
+                "inventoryRevision": "6d9087d3824ff1af7827ff6d4e06ff45ababf79cbc27a143a6ab92c79ca71f5f",
+                "attemptedAt": 6600000
+              }
+            ],
+            "events": [
+              {
+                "at": 6600000,
+                "type": "reset"
+              },
+              {
+                "at": 6600000,
+                "type": "reset-unverified"
+              },
+              {
+                "at": 6600000,
+                "type": "intent"
+              },
+              {
+                "at": 6000000,
+                "type": "enabled"
+              },
+              {
+                "at": 6000000,
+                "type": "bound"
+              }
+            ]
+          },
+          "requests": [
+            {
+              "id": "a",
+              "key": "key-1",
+              "startsAt": 6600000,
+              "expiresAt": 7200000,
+              "recovering": false
+            }
+          ]
+        }
+      }
+    ],
+    "initialSnapshot": {
+      "identity": {
+        "accountId": "account-a",
+        "scope": "workspace-a",
+        "email": "demo@example.test"
+      },
+      "availableCount": 2,
+      "remainingPercent": 90,
+      "credits": [
+        {
+          "id": "a",
+          "expiresAt": 7200000
+        },
+        {
+          "id": "b",
+          "expiresAt": 7500000
+        }
+      ]
+    }
+  }
+]

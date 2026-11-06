@@ -1,0 +1,167 @@
+[
+  {
+    "identity": {
+      "accountId": "workspace/0",
+      "scope": "codex:63eb9cd45e0f3a8f895141aeac8810840bc12ae3d939b752766b7ea52bff76f9",
+      "email": "demo@example.test"
+    },
+    "lead": 5,
+    "authorization": "6fd82ca7fb3b5176d44a7e46a01361089a005a3ccf2d9bb8beee88af3aaee974",
+    "consent": "abd705e57ba1de510126b232176a36af86b013912b167756cef2a3bfa47aca62",
+    "credits": [
+      {
+        "id": "a",
+        "expiresAt": 1000
+      },
+      {
+        "id": "A",
+        "expiresAt": 2000
+      },
+      {
+        "id": "é",
+        "expiresAt": 3000
+      },
+      {
+        "id": "é",
+        "expiresAt": 4000
+      },
+      {
+        "id": "/",
+        "expiresAt": 5000
+      }
+    ],
+    "inventoryRevision": "f355a357a6967dcab0fe5340025593599968f6a249312a4853efeed59e02d67d"
+  },
+  {
+    "identity": {
+      "accountId": "workspace/1",
+      "scope": "codex:d034504c25cf08e95d809a7a304841ae7daa38e6076b6ffd6fa3768c02289de9",
+      "email": "角色/\"\\@example.test"
+    },
+    "lead": 10,
+    "authorization": "2d537d3d52e3c328608d404f7b962962b27c2ffe1701762dd5465711d4a68270",
+    "consent": "943da5ed9699f66632d122a339b8cf027f89af15d71924eb6430aae2ff6eec26",
+    "credits": [
+      {
+        "id": "a",
+        "expiresAt": 1000
+      },
+      {
+        "id": "A",
+        "expiresAt": 2000
+      },
+      {
+        "id": "é",
+        "expiresAt": 3000
+      },
+      {
+        "id": "é",
+        "expiresAt": 4000
+      },
+      {
+        "id": "/",
+        "expiresAt": 5000
+      }
+    ],
+    "inventoryRevision": "f355a357a6967dcab0fe5340025593599968f6a249312a4853efeed59e02d67d"
+  },
+  {
+    "identity": {
+      "accountId": "workspace/2",
+      "scope": "codex:1fc9234ebac823d795527705d57fcfa697dc0e94b13e3959fc2d6bff05dda3b5",
+      "email": "é@example.test"
+    },
+    "lead": 30,
+    "authorization": "e070b633f414b87639d0c262cd4283aea7266db44dad95b5de7f35666a2bbe70",
+    "consent": "a4965cca5ab4dbcb70efd21e1dd675566b3fa19ed86d9af5f88b2ec5b6c42bfb",
+    "credits": [
+      {
+        "id": "a",
+        "expiresAt": 1000
+      },
+      {
+        "id": "A",
+        "expiresAt": 2000
+      },
+      {
+        "id": "é",
+        "expiresAt": 3000
+      },
+      {
+        "id": "é",
+        "expiresAt": 4000
+      },
+      {
+        "id": "/",
+        "expiresAt": 5000
+      }
+    ],
+    "inventoryRevision": "f355a357a6967dcab0fe5340025593599968f6a249312a4853efeed59e02d67d"
+  },
+  {
+    "identity": {
+      "accountId": "workspace/3",
+      "scope": "codex:a4d770fdd0dd61041f9cbd3e1a0543bcc03618cd577c69e97c428a3887749bf7",
+      "email": "é@example.test"
+    },
+    "lead": 60,
+    "authorization": "0ae0c59ada71fb38b891f48aaf13f21636010da2eaebcf8c077fac3c442a8c43",
+    "consent": "615fc73d1008ea5534ba6909d36500a1affb47c5f66bd9f64029fc7faa4c1b99",
+    "credits": [
+      {
+        "id": "a",
+        "expiresAt": 1000
+      },
+      {
+        "id": "A",
+        "expiresAt": 2000
+      },
+      {
+        "id": "é",
+        "expiresAt": 3000
+      },
+      {
+        "id": "é",
+        "expiresAt": 4000
+      },
+      {
+        "id": "/",
+        "expiresAt": 5000
+      }
+    ],
+    "inventoryRevision": "f355a357a6967dcab0fe5340025593599968f6a249312a4853efeed59e02d67d"
+  },
+  {
+    "identity": {
+      "accountId": "workspace/4",
+      "scope": "codex:174c130b26182d451e87c10976a144250284b52ede0cb0a492e1c2857937c4d8",
+      "email": "Ω🙂@example.test"
+    },
+    "lead": 10,
+    "authorization": "df69c9584f8765b84415fa8b0a13dc4675d8071b3fb40beb43aaef12f0f99ece",
+    "consent": "75ed2c6fd1ea021a4ba1f8f243d2a249a5aa4847bccf65c7d7fc7a398f53bf6d",
+    "credits": [
+      {
+        "id": "a",
+        "expiresAt": 1000
+      },
+      {
+        "id": "A",
+        "expiresAt": 2000
+      },
+      {
+        "id": "é",
+        "expiresAt": 3000
+      },
+      {
+        "id": "é",
+        "expiresAt": 4000
+      },
+      {
+        "id": "/",
+        "expiresAt": 5000
+      }
+    ],
+    "inventoryRevision": "f355a357a6967dcab0fe5340025593599968f6a249312a4853efeed59e02d67d"
+  }
+]

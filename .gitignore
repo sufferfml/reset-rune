@@ -1,0 +1,19 @@
+.DS_Store
+node_modules/
+dist/
+__pycache__/
+out/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+*.dmg
+*.p12
+*.p8
+design/qa/
+
+# Local builds and installed dependencies
+.build/
+node_modules/
+dist/

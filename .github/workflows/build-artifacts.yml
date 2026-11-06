@@ -1,0 +1,47 @@
+name: Prepare release artifacts (no publishing)
+
+# A manual build prepares reviewable files only. It has no release/npm publish
+# step, no signing secrets, and no token with repository write permissions.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prepare-artifacts-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Run mock and unit checks
+        run: npm test
+      - name: Check native toolchain
+        run: swift --version
+      - name: Run native synthetic checks
+        run: swift test --package-path native
+      - name: Build native Apple Silicon and Intel packages
+        run: node scripts/package-native.mjs --arch all
+      - name: Verify native artifacts
+        run: node scripts/verify-native-artifacts.mjs
+      - name: Upload review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: reset-rune-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/native/*.tgz
+            dist/native/*.dmg
+            dist/native/manifest.json
+            dist/native/SHA256SUMS.txt

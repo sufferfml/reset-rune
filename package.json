@@ -1,0 +1,37 @@
+{
+  "name": "reset-rune",
+  "version": "0.1.0",
+  "description": "Automatically use spare Codex resets before they expire.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sufferfml/reset-rune.git"
+  },
+  "type": "module",
+  "bin": {
+    "reset-rune": "distribution/npm/cli.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64",
+    "x64"
+  ],
+  "files": [
+    "distribution/npm/cli.cjs",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js test/reference/codex/*.test.js",
+    "desktop": "swift run --package-path native BottledResetRuneMenu",
+    "build:mac": "node scripts/package-native.mjs",
+    "test:native": "swift test --package-path native",
+    "pack:native": "node scripts/package-native.mjs"
+  },
+  "private": true
+}
