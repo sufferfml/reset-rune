@@ -68,6 +68,8 @@ Before uninstalling, run `reset-rune uninstall-service` to remove the background
 
 ## Development
 
+The `courier` branch adds task management and a version-locked path to existing Codex desktop chats. See the [compatibility record](docs/courier-compatibility.md) and [development plan](docs/courier-development-plan.md). Live message delivery has not been acceptance-tested; Claude desktop validation is deferred.
+
 Requires Xcode / Swift 6.0+ and Node.js.
 
 ```sh

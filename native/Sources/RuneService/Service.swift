@@ -4,9 +4,12 @@ import Network
 import Security
 import RuneCore
 import CodexTransport
+import CourierCore
 
 public actor ServiceCoordinator {
     public let engine: RuneEngine
+    let courier: CourierEngine?
+    var courierFailure: String?
     private var timer: Task<Void,Never>?
     private var working: Task<JSONObject,Never>?
     private var closing=false
@@ -15,13 +18,18 @@ public actor ServiceCoordinator {
     private var autoDue=false
     private var scheduledChecks=0, manualChecks=0
     public var publish: ((JSONObject)->Void)?
-    public init(engine:RuneEngine) { self.engine=engine }
+    public init(engine:RuneEngine, courier:CourierEngine?=nil, courierFailure:String?=nil) {
+        self.engine=engine; self.courier=courier; self.courierFailure=courierFailure
+    }
     public func setPublisher(_ value:@escaping (JSONObject)->Void) { publish=value }
+    var closingForCourier:Bool { closing }
+    func courierChanged() async { publish?(await status()); await reschedule() }
     public func status() async -> JSONObject {
         var view=await engine.view()
         let next=await engine.schedule()
-        view["runtime"]=["version":NativeRuntime.version,"native":true,"protocol":1,"scheduledChecks":scheduledChecks,"manualChecks":manualChecks]
+        view["runtime"]=["version":NativeRuntime.version,"native":true,"protocol":1,"courierProtocol":1,"scheduledChecks":scheduledChecks,"manualChecks":manualChecks]
         view["nextActionAt"]=next.at ?? NSNull(); view["nextActionReason"]=next.reason
+        view["courier"]=courierSummary()
         return view
     }
     public func refresh(manual:Bool) async -> JSONObject {
@@ -34,6 +42,7 @@ public actor ServiceCoordinator {
         timer?.cancel()
         if manual { manualChecks += 1 } else { scheduledChecks += 1 }
         let job=Task { await engine.tick(manual:manual) }; working=job
+        await reschedule()
         _=await job.value; working=nil
         let view=await status()
         failures=(view["status"] as? String)=="error" ? failures+1:0
@@ -52,7 +61,9 @@ public actor ServiceCoordinator {
         timer?.cancel(); timer=nil
         guard !closing else { return }
         let decision=await engine.schedule()
-        guard let planned=decision.at else { armedAt=nil;autoDue=false;return }
+        let runeAt = working == nil ? decision.at : nil
+        let courierAt = courierFailure == nil ? courier?.nextActionAt() : nil
+        guard let planned=[runeAt,courierAt].compactMap({ $0 }).min() else { armedAt=nil;autoDue=false;return }
         let now=Date().timeIntervalSince1970*1000
         let at=autoDue ? now:planned
         autoDue=false;armedAt=at
@@ -61,16 +72,34 @@ public actor ServiceCoordinator {
             do { try await Task.sleep(nanoseconds:UInt64(min(wait,365*86400)*1_000_000_000)) }
             catch { return }
             guard !Task.isCancelled else { return }
-            _=await self?.refresh(manual:false)
+            await self?.timerFired()
         }
     }
     public func systemEvent() async {
         guard !closing else { return }
-        guard (await engine.schedule()).at != nil else { await reschedule();return }
-        if failures>0 || (armedAt.map { $0 <= Date().timeIntervalSince1970*1000 } ?? false) { _=await refresh(manual:false) }
-        else { await reschedule() }
+        await timerFired(systemEvent:true)
     }
-    public func close() async { closing=true; timer?.cancel(); await engine.close() }
+    private func timerFired(systemEvent:Bool=false) async {
+        guard !closing else { return }
+        refreshCourierHostLiveness()
+        do { try courier?.tick() } catch { courierFailure="courier-persistence-failed" }
+        // Wake the desktop host before waiting for unrelated Codex account I/O.
+        publish?(await status())
+        let decision=await engine.schedule()
+        // Immediate decisions use the engine's current time; compare only after
+        // that actor call returns, otherwise every read moves the target ahead.
+        let now=Date().timeIntervalSince1970*1000
+        if working == nil, let at=decision.at, at<=now || (systemEvent && failures>0) {
+            _=await refresh(manual:false)
+        } else {
+            await reschedule()
+        }
+    }
+    public func close() async {
+        closing=true; timer?.cancel()
+        if let host=courier?.snapshot().host { try? courier?.unregisterHost(brokerSession:host.brokerSession,gateStopped:false) }
+        await engine.close()
+    }
 }
 
 public final class ServiceEvents {
@@ -100,7 +129,12 @@ public func runService(mock:Bool) async throws {
             : (language == "zh" ? "已使用一枚重置神符，Codex 额度已重置。" : "Reset Rune used. Your Codex quota was reset.")
         _=try? NativeRuntime.run("/usr/bin/osascript",["-e","display notification \"\(text)\" with title \"Bottled Reset Rune\""],timeout:3)
     })
-    let coordinator=ServiceCoordinator(engine:engine)
+    var courier:CourierEngine?, courierFailure:String?
+    do {
+        courier=try CourierEngine(store:FileCourierStore(directory:directory),
+            allowedBundleIDs:mock ? ["local.reset-rune.mock.codex","local.reset-rune.mock.claude"] : ["com.openai.codex","com.anthropic.claudefordesktop"])
+    } catch { courierFailure="courier-state-unavailable" }
+    let coordinator=ServiceCoordinator(engine:engine,courier:courier,courierFailure:courierFailure)
     var bytes=[UInt8](repeating:0,count:32)
     guard SecRandomCopyBytes(kSecRandomDefault,bytes.count,&bytes)==errSecSuccess else { throw RuneError("random-failed") }
     let token=Data(bytes).base64EncodedString().replacingOccurrences(of:"+",with:"-").replacingOccurrences(of:"/",with:"_").replacingOccurrences(of:"=",with:"")

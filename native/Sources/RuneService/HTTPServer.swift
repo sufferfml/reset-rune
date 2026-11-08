@@ -3,6 +3,7 @@ import NIOCore
 import NIOPosix
 import NIOHTTP1
 import RuneCore
+import CourierCore
 
 public final class LocalHTTPServer {
     let coordinator:ServiceCoordinator, token:String, port:Int
@@ -83,7 +84,8 @@ private final class RequestHandler:ChannelInboundHandler {
             guard h.headers["authorization"].count==1, server.authenticated(h.headers.first(name:"authorization")) else { respond(context,401,["error":"unauthorized"]); return }
             guard h.headers["transfer-encoding"].isEmpty, h.headers["content-length"].count<=1 else { respond(context,400,["error":"invalid-request"]); return }
         case .body(var buf):
-            guard body.count+buf.readableBytes<=4096 else { respond(context,413,["error":"body-too-large"]); return }
+            let limit = head?.uri.hasPrefix("/api/courier/") == true ? 256*1024 : 4096
+            guard body.count+buf.readableBytes<=limit else { respond(context,413,["error":"body-too-large"]); return }
             if let bytes=buf.readBytes(length:buf.readableBytes) { body.append(contentsOf:bytes) }
         case .end:
             guard let h=head else { context.close(promise:nil); return }
@@ -98,7 +100,9 @@ private final class RequestHandler:ChannelInboundHandler {
                         object=value
                     }
                     let result:JSONObject
-                    switch (h.method,h.uri) {
+                    if h.uri.hasPrefix("/api/courier/") {
+                        result=try await server.coordinator.courierRequest(method:h.method.rawValue,path:h.uri,object:object)
+                    } else { switch (h.method,h.uri) {
                     case (.GET,"/api/status"): result=await server.coordinator.status()
                     case (.GET,"/api/events"):
                         let view=await server.coordinator.status()
@@ -112,11 +116,12 @@ private final class RequestHandler:ChannelInboundHandler {
                     case (.PATCH,"/api/config"): result=try await server.coordinator.configure(object)
                     case (.POST,"/api/bind"): result=try await server.coordinator.bind(object["consent"] as? String)
                     default: throw RuneError("not-found",httpStatus:404)
-                    }
+                    } }
                     context.eventLoop.execute { self.respond(context,200,result) }
                 } catch {
                     let err=error as? RuneError
-                    context.eventLoop.execute { self.respond(context,err?.httpStatus ?? 500,["error":err?.code ?? "service-error"]) }
+                    let courier=error as? CourierError
+                    context.eventLoop.execute { self.respond(context,err?.httpStatus ?? courier?.httpStatus ?? 500,["error":err?.code ?? courier?.code ?? "service-error"]) }
                 }
             }
         }

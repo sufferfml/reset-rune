@@ -12,9 +12,11 @@
 | --- | --- |
 | `Sources/RuneCore` | JSON 合同、授权、操作状态机和调度决策 |
 | `Sources/CodexTransport` | 固定兼容版本的官方 App Server，见模块 README |
+| `Sources/CourierCore` | 单次任务合同、固定截止、持久状态和一次性发送许可；同步核心由服务串行拥有 |
+| `Sources/DesktopAutomation` | 桌面目标、辅助功能边界、版本兼容门禁与内存模拟；不读取认证文件 |
 | `Sources/RuneService` | 私有持久化、回环鉴权 API、状态订阅、launchd 和运行包管理 |
 | `Sources/RuneCommand` | 短时 CLI 与安装、升级、回退、卸载入口 |
-| `Sources/RuneMenu` | 菜单栏图标、紧凑设置面板和后台状态订阅 |
+| `Sources/RuneMenu` | 菜单栏与神符面板；`CourierView/Model/Client` 管理任务，`CourierMenuController` 管理原生窗口，`CourierHost` 承载投递 |
 | `Tests`、`../test/contracts` | 合成协议、状态机、生命周期和跨语言合同测试 |
 
 ## 必须保留
@@ -26,6 +28,9 @@
 - 调度提示不等于兑换授权。坏状态不能重置成空白后继续发送。
 - 同一机器用户只有一个执行器。生命周期锁约束安装写者，独占监听约束执行者。
 - 升级和回退只切换程序，始终使用最新操作记录，不能恢复旧状态快照或删除未决证据。
+- 信使和神符分别授权、存储与排期；长时间桌面操作不得占用神符事务。后台不执行 AX；主应用退出后不自动拉起。
+- 桌面版本缺少稳定发前目标关联或发后消息证据时不授权生产发送。未知结果不自动重发，同一聊天未核对前不叠加派发。
+- 信使预览须同时满足 mock 和显式合成面板预览，只用内存状态；不得退回真实服务、聊天目录或权限查询。
 
 ## 验证
 

@@ -54,9 +54,27 @@ python3 scripts/smoke-native-lifecycle.py
 
 ## 当前验证结果
 
+以下历史结果仅覆盖现有神符发行版。「信使任务」开发验证另列在后，其验收见[开发计划](courier-development-plan.md#5-验收矩阵)与[技术方案](courier-technical-design.md#10-验证与尚待冻结事项)，不能据此认定任何桌面聊天发送能力已通过。
+
 - 原生单元与合成协议检查通过；JavaScript 合同参考的 28 项检查通过。
 - Apple 芯片与 Intel 的应用、helper 和 DMG 均通过 Developer ID 签名、Apple 公证及票据验证。
 - 两种架构的 npm 平台包与 DMG 内的完整签名应用内容一致；隔离 CLI 帮助与版本检查通过。
 - 模拟服务安装、重启、升级、回退和卸载检查通过，操作记录及最新设置保留，测试注册已清理。
 - 120 秒合成空闲观察中，远期任务没有新增远程查询，状态订阅及暂停门禁正常；这不是 24 小时能耗或真实 Codex 查询测量。
 - 真实备用重置、Intel 硬件和最低系统版本实机验收未在本轮执行。
+
+## 信使任务开发验证
+
+2026-11-08，courier 分支的隔离开发验证，尚未发行：
+
+- Swift 共 147 项测试通过：CourierCore 35、DesktopAutomation 35、RuneService 17、RuneMenu 24、RuneCore 28、CodexTransport 8；JavaScript 参考合同 28 项通过。包含坏状态、写失败、单次许可、旧宿主、未知恢复、HTTP 限额、回执重放、原生 socket 拆帧/对端/超时/忙碌/旧目标恢复、搜索、分钟精度与神符授权隔离；新增调度调用耗时下即时神符任务不被持续推迟的回归检查，以及无名称保存即启用、旧名称兼容、Unicode 摘要与发送原文保持检查。固定 15 分钟新增定义、旧 60 分钟状态不迁移、HTTP 路由和并发缓存检查均通过。本轮未改变 JavaScript 参考合同，沿用此前 28 项通过的证据。
+- scripts/smoke-courier.py 通过：独立数据目录/空白 CODEX_HOME，直启自己的模拟后台与隐藏菜单栏；双端内存模拟各派发一项且仅一次尝试，后台重启后终态保留，神符保持关闭。没有 launchd 注册、真实桌面或登录访问。
+- arm64/x86_64 双架构本地打包与产物核验通过：2 份 DMG、2 份平台包及 npm 主包，跨渠道内容、架构、ad-hoc 签名和 6 项隔离 CLI 检查一致。本轮使用本地 ad-hoc 签名，未做 Developer ID 签名、公证或发布；回执位于忽略的 .build/native-artifact-verification.json。
+- 使用本轮打包 helper 的模拟生命周期 8 项检查通过：独立 .mock 服务安装、合成重置一次、重启、升级、回退、卸载及产物完整性核对，配置与记录保留；测试服务、端口和临时目录已清理。过程中发现并修复共享调度器即时神符任务被不断推迟的回归，修复前测试可复现，修复后全套及生命周期重跑通过。未改变真实服务或读取真实登录。
+- 四种中文/英文与浅色/深色管理窗合成预览已检查；输出仅位于忽略的 .build/courier-qa。表单可滚动，保存前须核对发送时间及固定 15 分钟补发说明；未做完整人工键盘/VoiceOver 等系统验收。
+- 简化表单后的中文合成预览另位于忽略的 .build/courier-form-qa；名称输入已移除，摘要从文本派生，保存区仅保留保存即启用。142 项 Swift 结果位于 .build/courier-form-swift-tests.log；双端隔离模拟派发与后台重启已重跑通过，未进行真实文本发送。
+- 简化表单已重新完成双架构打包和产物核验，并更新本机安装的应用与后台。真实界面只读核对确认不再有名称输入、保存区只有「保存」，原服务配置保留，未创建测试任务或开启信使；安装回执位于忽略的 .build/courier-form-installation.json。
+- 固定 15 分钟调整的测试日志为 .build/courier-deadline-swift-tests.log。隔离模拟首次发现服务连接缓存并发释放崩溃，完整 getter/setter 加短锁后，12,288 次合成缓存并发操作及一次双端模拟派发/后台重启通过，日志为 .build/courier-deadline-smoke-1.log。紧接的第二次运行被端口冲突保护拒绝，未开始派发；随后只读检查无模拟监听，未放宽保护或停止其他进程。
+- 固定期限及缓存修复后的双架构打包、产物核验已通过（.build/courier-deadline-artifacts.log），本机应用和运行中后台均与该构建一致。实际表单确认仅保留发送时间和 15 分钟短说明，无延后选择或第二组时间；保持原配置与未启用信使状态，未创建或发送真实任务。安装回执为 .build/courier-deadline-installation.json。
+- Codex 26.1103.41825/build 25679 已通过新 Swift 生产代码的真实只读发现与 IPC prepare，peer/owner/目标 ID/runtime schema 匹配，正确识别当前忙碌；未做 stage/press/start-turn。现走同桌面 owner 的锁版本 IPC，不依赖缺失的 AX 身份，未知版本阻断。Claude 真实验证按用户要求延期，真实派发保持阻断。
+- 未执行真实文本发送、备用重置、正式 Developer ID/公证、Intel/macOS 13 实机或长时间资源观察。具体 P0 缺口及只读范围见[兼容核对](courier-compatibility.md)。

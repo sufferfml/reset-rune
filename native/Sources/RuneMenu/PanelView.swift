@@ -10,7 +10,7 @@ private extension Color {
     }
 }
 
-private struct Palette {
+struct Palette {
     let dark: Bool
     var surface: Color { Color(hex: dark ? 0x202723 : 0xf7f5ef) }
     var well: Color { Color(hex: dark ? 0x28312b : 0xefede4) }
@@ -33,6 +33,7 @@ private struct HeightKey: PreferenceKey {
 
 struct PanelView: View {
     @ObservedObject var model: PanelModel
+    var courier: CourierMenuController? = nil
     @Environment(\.colorScheme) private var colorScheme
     private var palette: Palette { Palette(dark: colorScheme == .dark) }
 
@@ -43,6 +44,9 @@ struct PanelView: View {
             if model.confirmation != nil { confirmation }
             summary
             if model.panel == "credits" { creditDetails }
+            if let courier {
+                CourierSummaryButton(model: courier.model, panel: model, open: courier.showWindow)
+            }
             footer
             if model.panel == "settings" { settings }
             if model.panel == "activity" { activity }

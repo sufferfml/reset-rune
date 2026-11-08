@@ -40,6 +40,22 @@ final class ServiceTests:XCTestCase {
         let activeSchedule=await engine.schedule()
         XCTAssertEqual(activeSchedule.reason,"scheduled-expiry", "Fresh mock deadlines must be integer milliseconds")
     }
+    func testImmediateResetEvaluationSurvivesScheduleActorDelay() async throws {
+        let dir=try temporary(); defer { try? FileManager.default.removeItem(at:dir) }
+        let engine=try RuneEngine(source:MockSource(directory:dir),store:MemoryStateStore(),now:{
+            // A schedule can finish after the coordinator starts checking it.
+            Thread.sleep(forTimeInterval:0.002)
+            return Date().timeIntervalSince1970*1000
+        })
+        _=try await engine.configure(["enabled":true,"notify":false,"lead":30])
+        let coordinator=ServiceCoordinator(engine:engine)
+        await coordinator.systemEvent()
+        let state=await engine.durableState()
+        let operations=state["operations"] as? [JSONObject] ?? []
+        XCTAssertEqual(operations.count,1,"An immediate evaluation must not be pushed forward by every schedule read")
+        XCTAssertEqual(operations.first?["stage"] as? String,"reset")
+        await coordinator.close()
+    }
     func testHTTPAuthenticationAndManagementContract() async throws {
         let dir=try temporary(); defer { try? FileManager.default.removeItem(at:dir) }
         let engine=try RuneEngine(source:MockSource(directory:dir),store:FileStateStore(directory:dir))

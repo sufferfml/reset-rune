@@ -36,7 +36,20 @@ struct PanelConnection: Decodable, Equatable {
 final class PanelServiceClient {
     let mock: Bool
     let directory: URL
-    private(set) var connection: PanelConnection?
+    private let connectionLock = NSLock()
+    private var cachedConnection: PanelConnection?
+    // SSE callbacks and ordinary async requests may discover concurrently.
+    // Retain/copy the whole value under the lock as well as replacing it.
+    private(set) var connection: PanelConnection? {
+        get {
+            connectionLock.lock(); defer { connectionLock.unlock() }
+            return cachedConnection
+        }
+        set {
+            connectionLock.lock(); defer { connectionLock.unlock() }
+            cachedConnection = newValue
+        }
+    }
     private let session: URLSession
 
     init(mock: Bool, environment: [String: String] = ProcessInfo.processInfo.environment) {

@@ -31,12 +31,22 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
     private var resetScrollToTop = false
     private var modelChanges: AnyCancellable?
     private var measurement: DispatchWorkItem?
+    private let courier: CourierMenuController
+    private var courierHost: CourierDeliveryHost?
+    private var courierEvents: Task<Void, Never>?
 
     init(mock: Bool, preview: URL?, screenshot: String?, initialPanel: String?, startHidden: Bool) {
-        model = PanelModel(mock: mock, previewFile: preview)
+        let panelModel = PanelModel(mock: mock, previewFile: preview)
+        model = panelModel
+        courier = CourierMenuController(panel: panelModel, mock: mock)
         screenshotPath = screenshot
         self.startHidden = startHidden
         super.init()
+        courier.onWillShow = { [weak self] in self?.hide() }
+        if !model.preview {
+            courierHost = CourierDeliveryHost(client:courier.model.client,mock:mock) { [weak self] snapshot in self?.courier.model.accept(snapshot) }
+            courier.model.onSnapshot = { [weak self] snapshot in self?.courierHost?.receive(snapshot) }
+        }
         model.panel = initialPanel
         model.onPresentationChanged = { [weak self] in self?.updatePresentation() }
         model.onHeightChanged = { [weak self] height in self?.resize(height) }
@@ -64,6 +74,16 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
         applicationSubmenu.addItem(quitItem)
         applicationItem.submenu = applicationSubmenu
         applicationMenu.addItem(applicationItem)
+        let editItem=NSMenuItem()
+        let editMenu=NSMenu(title:model.language=="zh" ? "编辑" : "Edit")
+        for (index,entry) in [
+            ("Undo","undo:","z"),("Redo","redo:","Z"),
+            ("Cut","cut:","x"),("Copy","copy:","c"),("Paste","paste:","v"),("Select All","selectAll:","a")
+        ].enumerated() {
+            let item=NSMenuItem(title:entry.0,action:Selector(entry.1),keyEquivalent:entry.2)
+            item.tag=index+1;editMenu.addItem(item)
+        }
+        editItem.submenu=editMenu;applicationMenu.addItem(editItem)
         NSApp.mainMenu = applicationMenu
         if let button = item.button {
             button.target = self
@@ -75,14 +95,19 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
             Task { @MainActor in
                 guard let self, !self.quitting else { return }
                 if self.startHidden && !self.suppressedStartupActivation { self.suppressedStartupActivation = true; return }
-                if self.window?.isVisible != true { self.show() }
+                if self.window?.isVisible != true && !self.courier.isWindowVisible { self.show() }
             }
         })
         observers.append(NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.position() }
         })
         model.connect()
-        if !startHidden { show() }
+        startCourierSubscription()
+        if !startHidden {
+            if model.preview && CommandLine.arguments.contains("--courier-preview") {
+                courier.showPreview(editor:CommandLine.arguments.contains("--courier-editor"))
+            } else { show() }
+        }
         if screenshotPath != nil, model.preview {
             screenshotTask = Task { [weak self] in
                 try? await Task.sleep(nanoseconds: 700_000_000)
@@ -125,6 +150,7 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
     }
 
     @objc private func openPanel(_ sender: Any?) { show() }
+    @objc private func openCourier(_ sender: Any?) { courier.showWindow() }
     @objc private func reconnect(_ sender: Any?) { model.reconnect(); show() }
     @objc private func quit(_ sender: Any?) { NSApp.terminate(nil) }
 
@@ -135,6 +161,8 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
             item.target = self
             menu.addItem(item)
         }
+        let courierItem = NSMenuItem(title: CourierCopy.text("title",language:model.language),action:#selector(openCourier(_:)),keyEquivalent:"")
+        courierItem.target=self;menu.addItem(courierItem)
         menu.addItem(.separator())
         let detail = NSMenuItem(title: model.text("quitNote"), action: nil, keyEquivalent: "")
         detail.isEnabled = false
@@ -149,6 +177,11 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
 
     private func updatePresentation() {
         NSApp.mainMenu?.items.first?.submenu?.items.first?.title = model.text("quit")
+        if let items=NSApp.mainMenu?.items,items.count>1,let edit=items[1].submenu {
+            edit.title=model.language=="zh" ? "编辑" : "Edit"
+            let labels=model.language=="zh" ? ["撤销","重做","剪切","复制","粘贴","全选"] : ["Undo","Redo","Cut","Copy","Paste","Select All"]
+            for (index,title) in labels.enumerated() { edit.item(withTag:index+1)?.title=title }
+        }
         let names: [PanelState.Bottle: String] = [.stored: "trayStored", .empty: "trayEmpty", .unknown: "trayUnknown"]
         if let name = names[model.bottle], let image = MenuArtwork.tray(name) {
             image.isTemplate = false
@@ -189,7 +222,7 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
         guard !quitting else { return }
         if window == nil { window = makeWindow() }
         if hostingView == nil {
-            let host = NSHostingView(rootView: PanelView(model: model))
+            let host = NSHostingView(rootView: PanelView(model: model,courier:courier))
             host.frame = NSRect(x: 0, y: 0, width: 368, height: desiredHeight)
             host.autoresizingMask = [.width]
             let scroll = NSScrollView(frame: host.frame)
@@ -279,6 +312,9 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
         screenshotTask?.cancel()
         measurement?.cancel()
         modelChanges?.cancel()
+        courierEvents?.cancel()
+        courierHost?.stop()
+        courier.close()
         model.close()
         for observer in observers { NotificationCenter.default.removeObserver(observer) }
         if lockFD >= 0 { close(lockFD) }
@@ -286,12 +322,39 @@ private final class MenuApplication: NSObject, NSApplicationDelegate, NSWindowDe
 
     private func savePreviewScreenshot() {
         defer { screenshotPath = nil }
+        if let path=screenshotPath,model.preview,CommandLine.arguments.contains("--courier-preview") {
+            if courier.savePreviewScreenshot(to:path),CommandLine.arguments.contains("--quit-after-screenshot") { NSApp.terminate(nil) }
+            return
+        }
         guard let path = screenshotPath, path.hasPrefix("/"), model.preview,
               let view = hostingView, let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
         view.cacheDisplay(in: view.bounds, to: bitmap)
         guard let data = bitmap.representation(using: .png, properties: [:]) else { return }
         try? data.write(to: URL(fileURLWithPath: path), options: .atomic)
         if CommandLine.arguments.contains("--quit-after-screenshot") { NSApp.terminate(nil) }
+    }
+
+    private func startCourierSubscription() {
+        guard !model.preview else { return }
+        courierEvents = Task { [weak self] in
+            guard let self else { return }
+            var delay:UInt64=1
+            while !Task.isCancelled {
+                do {
+                    try await self.courier.model.client.subscribeChanges { [weak self] in
+                        Task { @MainActor in
+                            guard let self else { return }
+                            if let snapshot=try? await self.courier.model.client.snapshot() {
+                                self.courier.model.accept(snapshot)
+                            }
+                        }
+                    }
+                } catch is CancellationError { return }
+                catch { self.courierHost?.connectionLost() }
+                do { try await Task.sleep(nanoseconds:delay*1_000_000_000) } catch { return }
+                delay=min(60,delay*2)
+            }
+        }
     }
 }
 

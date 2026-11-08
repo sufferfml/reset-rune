@@ -68,6 +68,8 @@ reset-rune --help          # 查看全部命令
 
 ## 开发
 
+`courier` 分支已加入开发中的「信使任务」管理和 Codex 同桌面聊天派发路径。当前支持的桌面版本及只读/合成证据见[兼容记录](docs/courier-compatibility.md)，实施范围见[开发计划](docs/courier-development-plan.md)。尚未进行真实发送验收；Claude 真实验证延期，不列为已可用功能。
+
 需要 Xcode / Swift 6.0+ 和 Node.js。
 
 ```sh

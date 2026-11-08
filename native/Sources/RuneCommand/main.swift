@@ -2,6 +2,7 @@ import Foundation
 import Darwin
 import RuneCore
 import RuneService
+import CourierCore
 
 private final class LocalSessionDelegate:NSObject,URLSessionTaskDelegate {
     func urlSession(_ session:URLSession,task:URLSessionTask,willPerformHTTPRedirection response:HTTPURLResponse,newRequest request:URLRequest,completionHandler:@escaping(URLRequest?)->Void) { completionHandler(nil) }
@@ -17,8 +18,13 @@ private final class LocalSessionDelegate:NSObject,URLSessionTaskDelegate {
         let words=args.filter { $0 != "--mock" }, cmd=words.first ?? "--help", params=Array(words.dropFirst())
         if ["help","--help","-h"].contains(cmd) { print("Bottled Reset Rune \(NativeRuntime.version) (native macOS)\n  reset-rune [--mock] status | start | stop | restart | upgrade | refresh | doctor | ui\n  reset-rune enable --confirm | bind --confirm | pause\n  reset-rune config <lead|language|appearance|startup|notify> <value>\n  reset-rune uninstall-service | rollback\nAutomatic use requires explicit confirmation. --mock uses separate synthetic data."); return }
         if cmd=="--version" { print(NativeRuntime.version); return }
+        if cmd=="--courier-capabilities" { print("{\"courierProtocol\":1,\"schema\":1}"); return }
         let directory=Paths.directory(mock:mock)
-        if cmd=="--check-state" { _=try RuneState.validate(FileStateStore(directory:directory).read());print("compatible-v1");return }
+        if cmd=="--check-state" {
+            _=try RuneState.validate(FileStateStore(directory:directory).read())
+            try CourierRuntimeCompatibility.validateState(directory:directory)
+            print("compatible-v1");return
+        }
         if cmd=="--serve" { try await runService(mock:mock); return }
         guard ["status","start","stop","restart","upgrade","refresh","doctor","ui","enable","bind","pause","config","uninstall-service","rollback"].contains(cmd) else { throw RuneError("unknown-command") }
         if cmd=="ui", !params.isEmpty { throw RuneError("ui-is-native-no-url") }
@@ -38,6 +44,7 @@ private final class LocalSessionDelegate:NSObject,URLSessionTaskDelegate {
             let previous=directory.appendingPathComponent("runtime/previous")
             if FileManager.default.fileExists(atPath:previous.appendingPathComponent("Contents/MacOS/reset-rune").path) {
                 _=try NativeRuntime.run("/usr/bin/codesign",["--verify","--deep","--strict",previous.path])
+                try CourierRuntimeCompatibility.checkCandidate(previous.appendingPathComponent("Contents/MacOS/reset-rune"),directory:directory)
                 _=try NativeRuntime.run(previous.appendingPathComponent("Contents/MacOS/reset-rune").path,["--check-state"]+(mock ? ["--mock"]:[]))
             } else { throw RuneError("rollback-unavailable") }
             _=try RuneState.validate(FileStateStore(directory:directory).read())
@@ -47,6 +54,7 @@ private final class LocalSessionDelegate:NSObject,URLSessionTaskDelegate {
             try NativeRuntime.stop(mock:mock)
             if cmd=="stop" { print("Bottled Reset Rune service stopped."); return }
             if cmd=="uninstall-service" {
+                try CourierRuntimeCompatibility.pauseForUninstall(directory:directory,mock:mock)
                 let store=try FileStateStore(directory:directory);var state=try RuneState.validate(store.read());var config=state["config"] as! JSONObject;config["startup"]=false;state["config"]=config;try store.write(state)
                 try NativeRuntime.startup(false,directory:directory,mock:mock)
                 let runtime=directory.appendingPathComponent("runtime")

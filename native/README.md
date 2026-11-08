@@ -1,19 +1,26 @@
 # Bottled Reset Rune 原生实现
 
-原生菜单栏界面、后台服务和 CLI 面向 macOS 13+，通过固定兼容版本的官方 Codex App Server 操作。npm 与 DMG 使用相同的执行核心，不携带浏览器或 Node.js 常驻运行时。
+原生菜单栏界面、后台服务和 CLI 面向 macOS 13+；神符功能通过固定兼容版本的官方 Codex App Server 操作，信使功能使用各目标桌面适配器。npm 与 DMG 使用相同的执行核心，不携带浏览器或 Node.js 常驻运行时。
+
+「信使任务」已有本地合同、调度、主应用投递宿主、原生管理窗和内存模拟适配器。Codex 采用当前桌面版本的本机聊天通道，只读握手核对与真实发送验收分别记录；已只读核对的精确版本配置可由用户明确启用派发，发送前再核对桌面通道和指定聊天的归属。当前尚未执行真实发送验收，模拟通过不能作为真实送达证据。Claude 和未知 Codex 版本继续按各自兼容门禁处理。范围与验证门槛见[开发计划](../docs/courier-development-plan.md)和[技术方案](../docs/courier-technical-design.md)。
 
 ## 入口与职责
 
 | 入口 | 职责 |
 | --- | --- |
-| `Package.swift` | `RuneCore`、`CodexTransport`、`RuneService`、命令行与界面目标及锁定依赖 |
+| `Package.swift` | 神符与信使核心、CodexTransport、DesktopAutomation、服务、CLI／界面及锁定依赖 |
 | `Sources/RuneCore/Contracts.swift` | JSON 合同、`ResetSource`、`StateStore`、错误及调度结果 |
 | `Sources/RuneCore/State.swift` | 配置、身份、授权与库存摘要 |
 | `Sources/RuneCore/Engine.swift` | 串行状态机、持久操作记录和下一任务决策 |
 | `Sources/CodexTransport` | App Server stdio 传输、运行时发现、账号与库存归一化 |
+| `Sources/CourierCore` | 单次信使任务、固定截止、持久派发合同与发送许可；不访问桌面 |
+| `Sources/DesktopAutomation` | Codex／Claude 目标发现、显式打开、桌面通道与兼容门禁、隔离模拟；按版本分别记录验收状态 |
 | `Sources/RuneService` | 私有文件、回环通信、订阅、系统事件和运行包管理 |
 | `Sources/RuneCommand` | `reset-rune` 命令入口 |
 | `Sources/RuneMenu` | `BottledResetRuneMenu` 菜单栏与紧凑原生面板。[MenuArtwork](Sources/RuneMenu/MenuArtwork.swift) 在应用包和源码调试环境中加载[界面美术](../assets/ARTWORK.md)。 |
+| `Sources/RuneMenu/CourierMenuController.swift`、`CourierView.swift` | 368px 面板摘要入口、独立信使管理窗、合成预览与截图 |
+| `Sources/RuneMenu/CourierModel.swift`、`CourierClient.swift`、`CourierCopy.swift` | 表单时间与目标校验、鉴权 API／变更订阅、中英文派发文案 |
+| `Sources/RuneMenu/CourierHost.swift` | 主应用的宿主注册、领取、输入／发送许可与回执；独立于窗口可见性 |
 | `Tests`、`../test/contracts` | 假时钟、合成服务与共享合同验证 |
 
 ## 构建与测试
@@ -48,6 +55,22 @@ swift test --package-path native
 - 升级、回退和重启均读取最新操作记录，不恢复安装前状态。
 
 所有业务时间为 UTC 毫秒，时区只影响展示。假时钟和假来源使到期边界、身份变化、重启与恢复可重复验证。
+
+## 信使管理与预览
+
+主面板的信使摘要打开独立原生管理窗，任务与派发记录分别浏览。只填写一处发送文本，不另填任务名称；列表和记录直接使用文本摘要。表单只设置发送时间，支持单次指定时间与保存时固定的相对时间；新建、编辑、复制或重新排期由后台统一保留 15 分钟补发期限，没有「允许延后发送」选项。已有 60 分钟期限的 v1 任务与历史按原值恢复，不因升级改写；再次保存或重排时使用 15 分钟，派发记录仍显示最晚发送时间。唯一的「保存」按钮会启用该任务和信使派发；如信使原先全局暂停，也会恢复其他未来排期，已过计划时刻的任务仍需重新安排。神符授权与信使授权独立。
+
+目标选择器默认发现最近至多 500 个聊天；还有更多时明确提示。输入标题、项目或聊天 ID 后按回车或「查找聊天」搜索，仍有超过 500 项匹配时提示缩小关键词。搜索期间切换应用、新建任务或更改查询会使旧请求失效，旧异步结果不能覆盖当前列表；搜索不依赖常驻全量聊天索引或额外权限。
+
+权限由适配器能力决定，不以「信使任务」统一申请辅助功能。无需保持 Codex 前台；目标尚未加载时会尝试打开该已有聊天，沿用其账号和权限，不操作桌面输入框，也无需 AX 授权。恢复目标仅在可信本机通道握手成功而该聊天尚无归属时进行，定向当前已核对签名的 Codex 应用打开精确的已有聊天，随后重新核对归属和快照；不新建聊天或回退到当前聊天。正常开始准备时要求 Codex 已运行，未运行则等待；恢复期间若 Codex 与系统打开操作并发退出，系统可能重启目标应用，不能承诺零启动/零激活，返回 PID 变化时会阻断本次投递。
+
+仅需 AX 的可发送适配器在用户明确启用派发时查询和申请辅助功能权限。界面分别显示当前版本只读已核对／尚未实发验收，以及未知版本不兼容，不能把未验收写成已成功，也不能一概将已接入通道描述为不可用。
+
+管理窗关闭后释放视图，不停止主应用投递宿主。退出主应用则停止取得新的发送许可，后台仅保留计划等待重开；不会自动重开用户已退出的界面。已发出的消息不能因暂停或删除撤回。「文本已发送」只说明送达，不代表 Agent 已完成工作；未知结果需打开目标聊天人工核对，不自动重发。
+
+`CourierMenuController.showPreview(editor:)` 与 `savePreviewScreenshot(to:)` 仅在 `--mock` 且面板使用显式合成 `--preview` 文件时可用。它们通过内存 `CourierEngine` 生成双端任务与未知派发记录，不发现本地服务、真实聊天或辅助功能树；截图只导出当前管理窗内容。真实模式不会因预览参数写入任务或发送文本。
+
+开发程序可用 `--mock --preview <合成面板.json> --courier-preview` 打开管理窗示意，加 `--courier-editor` 展示编辑器；`--screenshot <绝对路径> --quit-after-screenshot` 导出后退出。`python3 scripts/smoke-courier.py` 验证隔离后台与菜单栏宿主的完整双端内存派发和重启，不注册 launchd。
 
 ## 调度与进程
 
