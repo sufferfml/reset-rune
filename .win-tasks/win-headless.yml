@@ -1,0 +1,31 @@
+- id: credentials
+  name: "@deepseek-ai/dsh-credentials-local"
+  disabled: false
+- id: llm-pi-ai
+  name: "@deepseek-ai/dsh-llm-pi-ai"
+  config:
+    providers:
+      claude-relay:
+        displayName: Claude Relay
+        api: anthropic-messages
+        baseURL: http://home.molingling.xyz:12608
+        apiKeyEnv: CLAUDE_RELAY_API_KEY
+        models:
+          - id: claude-opus-5-5
+            name: Claude Opus 5.5
+            contextWindow: 200000
+            maxTokens: 64000
+            input: [text, image]
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: claude-relay
+    model: claude-opus-5-5
+- id: permission
+  name: "@deepseek-ai/dsh-permission-presets"
+  config:
+    presets:
+      danger-full-access:
+        sandbox: danger-full-access
+        approval: never
+    defaultPreset: danger-full-access
