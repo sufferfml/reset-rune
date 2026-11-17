@@ -70,7 +70,7 @@ for(const arch of arches){
    if(ticket)continue;
    const zip=path.join(out,`notary-${arch}-${path.basename(bundle)}.zip`);
    await exec('/usr/bin/ditto',['-c','-k','--keepParent',bundle,zip]);
-   await exec('/usr/bin/xcrun',['notarytool','submit',zip,'--keychain-profile',process.env.RESET_RUNE_NOTARY_PROFILE||'reset-rune-notary','--wait'],{timeout:600_000});
+   await exec('/usr/bin/xcrun',['notarytool','submit',zip,'--keychain-profile',process.env.RESET_RUNE_NOTARY_PROFILE||'reset-rune-notary','--no-s3-acceleration','--wait'],{timeout:600_000});
    await exec('/usr/bin/xcrun',['stapler','staple',bundle]);await rm(zip);
   }
  }
@@ -80,7 +80,7 @@ for(const arch of arches){
  const dmg=path.join(out,`Bottled-Reset-Rune-${version}-${arch}.dmg`);await rm(dmg,{force:true});
  await exec('/usr/bin/hdiutil',['create','-quiet','-volname','Bottled Reset Rune','-srcfolder',stage,'-format','UDZO',dmg]);await rm(stage,{recursive:true,force:true});
  if(signed)await sign(dmg);
- if(notarize){await exec('/usr/bin/xcrun',['notarytool','submit',dmg,'--keychain-profile',process.env.RESET_RUNE_NOTARY_PROFILE||'reset-rune-notary','--wait'],{timeout:600_000});await exec('/usr/bin/xcrun',['stapler','staple',dmg]);}
+ if(notarize){await exec('/usr/bin/xcrun',['notarytool','submit',dmg,'--keychain-profile',process.env.RESET_RUNE_NOTARY_PROFILE||'reset-rune-notary','--no-s3-acceleration','--wait'],{timeout:600_000});await exec('/usr/bin/xcrun',['stapler','staple',dmg]);}
  const platform=path.join(out,`npm-${arch}`);await rm(platform,{recursive:true,force:true});await mkdir(platform,{recursive:true});await cp(app,path.join(platform,'Bottled Reset Rune.app'),{recursive:true});
  const codeLicense=await readFile(path.join(root,'LICENSE'),'utf8');
  const notice=await readFile(path.join(resources,'THIRD_PARTY.txt'),'utf8');
