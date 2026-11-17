@@ -12,7 +12,9 @@ The name comes from the Regeneration Rune you can store in a Bottle in Dota 2.
 
 ## Install
 
-Requires **macOS 13 or later** and the official **Codex CLI 0.153.0**, installed and logged in.
+Requires **macOS 13 or later** and the official **Codex CLI 0.153.0 or later**, installed and logged in. Newer versions are checked against the stable account/reset protocol rather than an exact version allowlist.
+
+Automatic redemption checks the required capabilities before sending. Use your existing compatible Codex installation; a separate pinned CLI is optional. Published 0.1.2 downloads still require the exact CLI 0.153.0; the broader support described here applies to builds from this branch. See [runtime maintenance](docs/codex-runtime-compatibility.md) (Chinese).
 
 ### macOS app
 

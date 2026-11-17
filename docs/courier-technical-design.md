@@ -14,7 +14,7 @@
 - [main.swift](../native/Sources/RuneMenu/main.swift)：主应用、菜单栏、面板生命周期。
 - [Runtime.swift](../native/Sources/RuneService/Runtime.swift)：launchd 与服务运行包。当前只复制 Service.app，不能据此假设后台有稳定的主应用副本可自动启动。
 
-CodexTransport 当前仅处理短时账号/额度/重置协议，固定 CLI 0.153.0、默认 15 秒、工作目录为根目录，不承载聊天投递。CLI 版本与两个桌面应用的版本单独管理。
+CodexTransport 当前仅处理短时账号/额度/重置稳定协议，默认会话上限 15 秒、工作目录为根目录，不承载聊天投递。CLI 按实际合同兼容，非基线运行时兑换前另做隔离能力核对；0.153.0 保留为独立安装基线，见[CLI 兼容维护](codex-runtime-compatibility.md)。这不放宽两个桌面应用各自的版本门禁。
 
 ### 主选结构
 

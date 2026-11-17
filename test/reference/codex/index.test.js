@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { appendFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,7 +24,7 @@ async function fakeRuntime(t, mode, options) {
   const home = await mkdtemp(join(tmpdir(), 'reset-rune-fake-'));
   t.after(() => rm(home, { recursive: true, force: true }));
   const executable = join(home, 'codex');
-  await writeFile(executable, `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(fixture)} "$@"\n`, { mode: 0o700 });
+  await writeFile(executable, `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(fixture)} "$@" --fixture-mode ${quote(mode)} --fixture-dir ${quote(home)}\n`, { mode: 0o700 });
   const source = createCodexSource({ executable, ...options, env: {
     HOME: home,
     CODEX_HOME: join(home, mode),
@@ -33,7 +33,9 @@ async function fakeRuntime(t, mode, options) {
   } });
   return {
     source,
+    executable,
     requests: async () => (await readFile(join(home, 'rpc.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse),
+    schemaProbes: async () => (await readFile(join(home, 'schema-probes.txt'), 'utf8')).trim().split('\n'),
   };
 }
 
@@ -45,7 +47,7 @@ function liveRuntime(t, mode, now = () => expiry - 1000) {
   return fakeRuntime(t, 'live-' + mode, { timeoutMs: 3000, allowConsume: true, now });
 }
 
-test('read-only transport negotiates the pinned protocol and coalesces concurrent callers', async t => {
+test('read-only transport negotiates the stable protocol and coalesces concurrent callers', async t => {
   const source = await fakeSource(t);
   assert.equal(source.mode, 'readonly');
   assert.deepEqual(Object.keys(source), ['mode', 'read']);
@@ -66,15 +68,93 @@ test('signed out skips quota reads and represents unknown inventory', async t =>
   assert.deepEqual(snapshot.credits, []);
 });
 
-test('unsupported runtime, deadlines, huge frames and unsolicited RPCs fail safely', async t => {
+test('non-Codex runtimes, deadlines, huge frames and unsolicited RPCs fail safely', async t => {
   for (const [mode, code, timeout] of [
     ['wrong-version', 'runtime-incompatible', 3000],
+    ['multiline-version', 'runtime-incompatible', 3000],
+    ['method-missing', 'runtime-incompatible', 3000],
+    ['invalid-params', 'runtime-incompatible', 3000],
+    ['missing-rate-limits', 'protocol-error', 3000],
+    ['missing-account', 'protocol-error', 3000],
     ['stall', 'timed-out', 150],
     ['oversized', 'protocol-error', 3000],
     ['server-request', 'protocol-error', 3000],
   ]) {
     const source = await fakeSource(t, mode, timeout);
     await assert.rejects(source.read(), { name: 'CodexSourceError', code, message: code });
+  }
+});
+
+test('version changes and additive fields can read through the stable protocol', async t => {
+  for (const mode of ['minimum-version', 'minimum-build', 'next-prerelease', 'newer-version', 'future-version', 'prerelease-version', 'extra-fields']) {
+    const { source, requests } = await fakeRuntime(t, mode, { timeoutMs: 3000 });
+    const snapshot = await source.read();
+    assert.deepEqual(snapshot.identity, identity);
+    assert.deepEqual(snapshot.credits, [{ id: operation.id, expiresAt: expiry }]);
+    const rpc = await requests();
+    assert.deepEqual(rpc[0].params.capabilities, { experimentalApi: false });
+    assert.ok(!rpc.some(row => row.method === 'account/rateLimitResetCredit/consume'));
+  }
+});
+
+test('versions below the stable minimum and invalid SemVer cannot read accounts or send redemption RPCs', async t => {
+  for (const mode of ['older-version', 'below-minimum', 'minimum-prerelease', 'invalid-prerelease']) {
+    const { source, requests } = await fakeRuntime(t, mode, { timeoutMs: 3000, allowConsume: true });
+    await assert.rejects(source.read(), { code: 'runtime-incompatible' });
+    await assert.rejects(source.consume(operation), { code: 'runtime-incompatible', notSent: true });
+    await assert.rejects(requests(), { code: 'ENOENT' });
+  }
+});
+
+test('a newer Codex version and additive fields retain the guarded explicit redemption contract', async t => {
+  for (const mode of ['newer-version', 'extra-fields']) {
+    const { source, requests } = await liveRuntime(t, mode);
+    assert.equal(await source.consume(operation), 'reset');
+    const rpc = await requests();
+    assert.deepEqual(rpc.map(row => row.method), [
+      'initialize', 'initialized', 'account/read', 'account/rateLimits/read', 'account/read',
+      'account/rateLimitResetCredit/consume',
+    ]);
+    assert.deepEqual(rpc[0].params.capabilities, { experimentalApi: false });
+    assert.deepEqual(rpc.at(-1).params, { creditId: operation.id, idempotencyKey: operation.key });
+  }
+});
+
+test('an incompatible read contract cannot authorize a redemption', async t => {
+  for (const [mode, code] of [['method-missing', 'runtime-incompatible'], ['invalid-params', 'runtime-incompatible'], ['missing-rate-limits', 'protocol-error']]) {
+    const { source, requests } = await fakeRuntime(t, mode, { timeoutMs: 3000, allowConsume: true });
+    await assert.rejects(source.consume(operation), { code, notSent: true });
+    assert.ok(!(await requests()).some(row => row.method === 'account/rateLimitResetCredit/consume'));
+  }
+});
+
+test('unknown outcomes and incompatible consume methods remain ambiguous after sending', async t => {
+  for (const [mode, code] of [['unknown-outcome', 'protocol-error'], ['consume-method-missing', 'read-failed']]) {
+    const { source, requests } = await liveRuntime(t, mode);
+    await assert.rejects(source.consume(operation), error => error.code === code && error.notSent !== true);
+    assert.equal((await requests()).filter(row => row.method === 'account/rateLimitResetCredit/consume').length, 1);
+  }
+});
+
+test('newer-version consumption caches isolated capability checks until the binary changes', async t => {
+  const { source, executable, schemaProbes } = await fakeRuntime(t, 'live-newer-version', {
+    timeoutMs: 3000, allowConsume: true, now: () => expiry - 1000,
+  });
+  assert.equal(await source.consume(operation), 'reset');
+  assert.equal(await source.consume({ ...operation, key: '58b81b80-5620-4ad9-952c-7ffdaf6392c1' }), 'reset');
+  assert.equal((await schemaProbes()).length, 1);
+  await appendFile(executable, '\n# synthetic runtime update\n');
+  assert.equal(await source.consume({ ...operation, key: '8c3e2e1f-05b8-4167-8c12-ec6a54b4bb6d' }), 'reset');
+  assert.equal((await schemaProbes()).length, 2);
+});
+
+test('an unavailable or unsafe newer consume schema is rejected before opening an account session', async t => {
+  for (const mode of ['live-newer-version-no-schema', 'live-newer-version-missing-credit-schema']) {
+    const { source, requests } = await fakeRuntime(t, mode, {
+      timeoutMs: 3000, allowConsume: true, now: () => expiry - 1000,
+    });
+    await assert.rejects(source.consume(operation), { code: 'runtime-incompatible', notSent: true });
+    await assert.rejects(requests(), { code: 'ENOENT' });
   }
 });
 

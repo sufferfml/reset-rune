@@ -5,7 +5,10 @@ import Foundation
 import Darwin
 import RuneCore
 
-public let supportedCodexVersion = "0.153.0"
+// Verified private-install baseline. Supported versions start at the declared
+// minimum, then follow stable protocol checks instead of an exact allowlist.
+public let baselineCodexVersion = "0.153.0"
+public let minimumCodexVersion = "0.153.0"
 private let maxFrameBytes = 1024 * 1024
 private let backendOverride = "chatgpt_base_url=\"https://chatgpt.com/backend-api/\""
 
@@ -58,7 +61,7 @@ public final class CodexSource: ResetSource, @unchecked Sendable {
             throw RuneError("preflight-ineligible", notSent: true)
         }
         let path: String
-        do { path = try await resolver.resolve() }
+        do { path = try await resolver.resolve(forConsume: true) }
         catch { throw RuneError((error as? RuneError)?.code ?? "runtime-missing", notSent: true) }
         let result = try await run(path: path, operation: operation, maySend: maySend)
         guard case .outcome(let outcome) = result else { throw RuneError("protocol-error") }
@@ -114,12 +117,23 @@ private func identitiesEqual(_ left: JSONObject?, _ right: JSONObject?) -> Bool 
 private actor RuntimeResolver {
     let explicit: String?
     let environment: [String: String]
-    var cached: (entry: String, resolved: String, fingerprint: String)?
+    var cached: (entry: String, resolved: String, fingerprint: String, version: String, consumeVerified: Bool)?
     init(executable: String?, environment: [String: String]) { explicit = executable; self.environment = environment }
     func invalidate() { cached = nil }
-    func resolve() async throws -> String {
+    func resolve(forConsume: Bool = false) async throws -> String {
         if let explicit, !explicit.hasPrefix("/") { throw RuneError("runtime-missing") }
-        if let cached, let value = inspect(cached.entry), value.path == cached.resolved, value.fingerprint == cached.fingerprint { return cached.resolved }
+        if var current = cached, let value = inspect(current.entry), value.path == current.resolved, value.fingerprint == current.fingerprint {
+            if forConsume && !current.consumeVerified {
+                try await verifyConsumeCapability(executable: current.resolved)
+                // The generator is an await point: do not authorize a different
+                // binary if an update changed the entry while it was running.
+                guard let after = inspect(current.entry), after.path == current.resolved, after.fingerprint == current.fingerprint else {
+                    cached = nil; throw RuneError("runtime-incompatible", notSent: true)
+                }
+                current.consumeVerified = true; cached = current
+            }
+            return current.resolved
+        }
         cached = nil
         let candidates = explicit.map { [$0] } ?? (environment["PATH", default: ""].split(separator: ":").map(String.init).filter { $0.hasPrefix("/") }.map { $0 + "/codex" }
             + [environment["HOME", default: ""] + "/.local/bin/codex", "/opt/homebrew/bin/codex", "/usr/local/bin/codex"])
@@ -127,9 +141,9 @@ private actor RuntimeResolver {
         for entry in candidates {
             guard let value = inspect(entry), !inspected.contains(value.path) else { continue }
             inspected.insert(value.path)
-            if let text = try? await probeVersion(executable: value.path, environment: environment), text == "codex-cli \(supportedCodexVersion)" {
-                cached = (entry, value.path, value.fingerprint)
-                return value.path
+            if let text = try? await probeVersion(executable: value.path, environment: environment), isSupportedCodexVersion(text) {
+                cached = (entry, value.path, value.fingerprint, text, text == "codex-cli \(baselineCodexVersion)")
+                return try await resolve(forConsume: forConsume)
             }
         }
         throw RuneError(inspected.isEmpty ? "runtime-missing" : "runtime-incompatible")
@@ -152,6 +166,32 @@ private actor RuntimeResolver {
         let fingerprint = [attributes[.systemNumber], attributes[.systemFileNumber], attributes[.size]].map { String(describing: $0) }.joined(separator: ":") + ":" + String(modified)
         return (path, fingerprint)
     }
+}
+
+private func isSupportedCodexVersion(_ text: String) -> Bool {
+    let pattern = #"^codex-cli (0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"#
+    let range = NSRange(text.startIndex..<text.endIndex, in: text)
+    guard let expression = try? NSRegularExpression(pattern: pattern),
+          let match = expression.firstMatch(in: text, range: range), match.range == range else { return false }
+    func capture(_ index: Int) -> String? {
+        Range(match.range(at: index), in: text).map { String(text[$0]) }
+    }
+    guard let major = capture(1), let minor = capture(2), let patch = capture(3) else { return false }
+    let prerelease = capture(4)
+    if let prerelease {
+        for identifier in prerelease.split(separator: ".") {
+            if identifier.count > 1, identifier.first == "0", identifier.utf8.allSatisfy({ (48...57).contains($0) }) { return false }
+        }
+    }
+    let minimum = minimumCodexVersion.split(separator: ".").map(String.init)
+    guard minimum.count == 3 else { return false }
+    // Compare normalized decimal strings so a valid future version cannot
+    // overflow an integer. Build metadata never affects SemVer precedence.
+    for (actual, required) in zip([major, minor, patch], minimum) {
+        if actual.count != required.count { return actual.count > required.count }
+        if actual != required { return actual > required }
+    }
+    return prerelease == nil
 }
 
 private func probeVersion(executable: String, environment: [String: String]) async throws -> String {
@@ -216,7 +256,7 @@ private final class AppServerSession: @unchecked Sendable {
                     }
                     do { try self.process.run() } catch { self.finish("read-failed"); return }
                     self.startDeadline()
-                    self.send(["id": 1, "method": "initialize", "params": ["clientInfo": ["name": "reset-rune", "title": "Bottled Reset Rune", "version": "0.1.2"], "capabilities": ["experimentalApi": true]]])
+                    self.send(["id": 1, "method": "initialize", "params": ["clientInfo": ["name": "reset-rune", "title": "Bottled Reset Rune", "version": "0.1.2"], "capabilities": ["experimentalApi": false]]])
                 }
             }
         }, onCancel: { self.cancel() })
@@ -271,13 +311,20 @@ private final class AppServerSession: @unchecked Sendable {
             return
         }
         guard wholeNumber(message["id"]) == Double(expectedId), !(expectedId == 5 && !sent) else { finish("protocol-error"); return }
-        if message["error"] != nil { finish("read-failed"); return }
+        if let error = message["error"] {
+            let code = wholeNumber((error as? JSONObject)?["code"], min: -9_007_199_254_740_991)
+            let incompatible = code == -32601 || code == -32602
+            // A changed method or required parameter can be reported before
+            // sending. Once consume was written, every failure stays ambiguous.
+            finish(incompatible && !sent ? "runtime-incompatible" : "read-failed"); return
+        }
         guard let result = message["result"] as? JSONObject else { finish("protocol-error"); return }
         switch expectedId {
         case 1:
             expectedId = 2; send(["method": "initialized"])
             send(["id": 2, "method": "account/read", "params": ["refreshToken": false]])
         case 2:
+            guard result.keys.contains("account") else { finish("protocol-error"); return }
             if let value = result["account"], !(value is NSNull), (value as? JSONObject)?["type"] as? String == nil { finish("protocol-error"); return }
             account = result["account"] as? JSONObject
             guard account?["type"] as? String == "chatgpt" else {

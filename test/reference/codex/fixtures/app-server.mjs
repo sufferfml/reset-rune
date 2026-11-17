@@ -1,13 +1,48 @@
 import assert from 'node:assert/strict';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
 
-const mode = basename(process.env.CODEX_HOME);
-const fixtureDir = dirname(process.env.CODEX_HOME);
 const args = process.argv.slice(2);
+const metadataAt = args.indexOf('--fixture-mode');
+const mode = metadataAt >= 0 ? args[metadataAt + 1] : basename(process.env.CODEX_HOME);
+const fixtureDir = metadataAt >= 0 ? args[metadataAt + 3] : dirname(process.env.CODEX_HOME);
+if (metadataAt >= 0) {
+  assert.equal(args[metadataAt + 2], '--fixture-dir');
+  args.splice(metadataAt, 4);
+}
+const scenario = mode.startsWith('live-') ? mode.slice('live-'.length) : mode;
 if (args.length === 1 && args[0] === '--version') {
-  process.stdout.write(`codex-cli ${mode === 'wrong-version' ? '99.0.0' : '0.153.0'}\n`);
+  const versions = {
+    'wrong-version': 'other-cli 99.0.0',
+    'newer-version': 'codex-cli 0.169.0',
+    'future-version': 'codex-cli 99.0.0',
+    'older-version': 'codex-cli 0.100.0',
+    'lexically-newer-old-version': 'codex-cli 0.99.999',
+    'minimum-version': 'codex-cli 0.153.0',
+    'below-minimum': 'codex-cli 0.152.999',
+    'minimum-prerelease': 'codex-cli 0.153.0-alpha.1',
+    'minimum-build': 'codex-cli 0.153.0+build.2',
+    'next-prerelease': 'codex-cli 0.153.1-alpha.1',
+    'invalid-prerelease': 'codex-cli 0.169.0-alpha.01',
+    'prerelease-version': 'codex-cli 0.169.0-alpha.11.1+build.2',
+    'multiline-version': 'codex-cli 0.169.0\nother-cli 1.0.0',
+  };
+  process.stdout.write(`${versions[scenario] ?? (scenario.startsWith('newer-version-') ? 'codex-cli 0.169.0' : 'codex-cli 0.153.0')}\n`);
+} else if (args[0] === 'app-server' && args[1] === 'generate-json-schema') {
+  assert.deepEqual(args.slice(0, 3), ['app-server', 'generate-json-schema', '--out']);
+  assert.equal(args.length, 4);
+  assert.notEqual(basename(process.env.CODEX_HOME), mode, 'Schema generation must not reuse account storage');
+  appendFileSync(join(fixtureDir, 'schema-probes.txt'), `${JSON.stringify({ home: process.env.HOME, codexHome: process.env.CODEX_HOME })}\n`);
+  if (scenario === 'newer-version-no-schema') process.exit(1);
+  const params = { type: 'object', properties: { creditId: { type: ['string', 'null'] }, idempotencyKey: { type: 'string' } }, required: ['idempotencyKey'] };
+  if (scenario === 'newer-version-missing-credit-schema') delete params.properties.creditId;
+  const request = { oneOf: [{ properties: { method: { type: 'string', enum: ['account/rateLimitResetCredit/consume'] }, params: { $ref: '#/definitions/ConsumeParams' } } }], definitions: { ConsumeParams: params } };
+  const response = { type: 'object', properties: { outcome: { type: 'string', enum: ['reset', 'nothingToReset', 'noCredit', 'alreadyRedeemed'] } }, required: ['outcome'] };
+  mkdirSync(join(args[3], 'v2'), { recursive: true });
+  writeFileSync(join(args[3], 'ClientRequest.json'), JSON.stringify(request));
+  writeFileSync(join(args[3], 'v2', 'ConsumeAccountRateLimitResetCreditResponse.json'), JSON.stringify(response));
+  if (scenario === 'newer-version-changes-during-probe') appendFileSync(join(fixtureDir, 'codex'), '\n');
 } else {
   assert.deepEqual(args.slice(0, 3), ['app-server', '--listen', 'stdio://']);
   assert.ok(args.includes('chatgpt_base_url="https://chatgpt.com/backend-api/"'));
@@ -22,7 +57,7 @@ if (args.length === 1 && args[0] === '--version') {
     appendFileSync(join(fixtureDir, 'rpc.jsonl'), line + '\n');
     assert.equal(request.method, methods.shift());
     if (request.method === 'initialize') {
-      assert.equal(request.params.capabilities.experimentalApi, true);
+      assert.equal(request.params.capabilities.experimentalApi, false);
       if (mode === 'stall') continue;
       if (mode === 'oversized') {
         process.stdout.write('x'.repeat(1024 * 1024 + 1));
@@ -41,13 +76,20 @@ if (args.length === 1 && args[0] === '--version') {
       const confirming = request.id === 4;
       const email = mode === 'live-member-changed' && confirming ? 'another@example.test' : 'mock@example.test';
       const account = mode === 'signed-out' ? null : { type: 'chatgpt', email };
-      const reply = { id: request.id, result: { account, requiresOpenaiAuth: true } };
+      if (scenario === 'extra-fields' && account) account.futureAccountField = { enabled: true };
+      const result = { account, requiresOpenaiAuth: true };
+      if (scenario === 'missing-account') delete result.account;
+      const reply = { id: request.id, result };
       if (mode === 'live-notified' && confirming) {
         process.stdout.write(JSON.stringify(reply) + '\n' + JSON.stringify({ method: 'account/updated' }) + '\n');
       } else send(reply);
     } else if (request.method === 'account/rateLimits/read') {
       assert.notEqual(mode, 'signed-out');
-      send({ id: request.id, result: {
+      if (['method-missing', 'read-method-missing', 'invalid-params', 'read-invalid-params'].includes(scenario)) {
+        send({ id: request.id, error: { code: scenario.includes('method-missing') ? -32601 : -32602, message: 'fixture private incompatibility' } });
+        continue;
+      }
+      const result = {
         accountId: mode === 'live-other-workspace' ? 'other-account' : 'mock-account',
         rateLimits: {
           limitId: 'codex',
@@ -61,12 +103,21 @@ if (args.length === 1 && args[0] === '--version') {
               ? Number(readFileSync(join(fixtureDir, 'expiry.txt'), 'utf8')) : 1_794_000_000,
           },
         ] },
-      } });
+      };
+      if (scenario === 'missing-rate-limits') delete result.rateLimits;
+      if (scenario === 'extra-fields') {
+        result.futureQuotaField = { remaining: 42 };
+        result.rateLimits.futureBucketField = 'ignored';
+        result.rateLimitResetCredits.futureInventoryField = 1;
+      }
+      send({ id: request.id, result });
     } else if (request.method === 'account/rateLimitResetCredit/consume') {
       if (mode === 'live-ambiguous') {
         send({ id: request.id, error: { code: -32603, message: 'fixture private payload' } });
+      } else if (mode === 'live-consume-method-missing') {
+        send({ id: request.id, error: { code: -32601, message: 'fixture private changed consume method' } });
       } else {
-        const outcome = ['live-secondary', 'live-dynamic'].includes(mode) ? 'reset' : mode.slice('live-'.length);
+        const outcome = ['secondary', 'dynamic', 'newer-version', 'extra-fields'].includes(scenario) ? 'reset' : scenario;
         send({ id: request.id, result: { outcome } });
       }
     }

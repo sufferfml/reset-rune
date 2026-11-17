@@ -45,10 +45,42 @@ public enum NativeRuntime {
         return data
     }
     public static func loaded(mock:Bool) -> Bool { (try? run("/bin/launchctl",["print","gui/\(getuid())/\(Paths.label(mock:mock))"])) != nil }
-    public static func plist(executable:URL, directory:URL, mock:Bool) throws -> Data {
+    public static func plist(executable:URL, directory:URL, mock:Bool, environment:[String:String]=ProcessInfo.processInfo.environment) throws -> Data {
         let keys=["RESET_RUNE_DATA_DIR","RESET_RUNE_CODEX_PATH","CODEX_HOME","PATH","HTTPS_PROXY","HTTP_PROXY","ALL_PROXY","NO_PROXY"]
-        let env=ProcessInfo.processInfo.environment.filter { keys.contains($0.key) }
+        var env=environment.filter { keys.contains($0.key) }
+        // A terminal restart must not silently replace the app's pinned CLI
+        // with a newer global installation. Explicit overrides still win.
+        if let pin=env["RESET_RUNE_CODEX_PATH"] {
+            guard validRuntimePin(pin) else { throw RuneError("invalid-runtime-pin") }
+        } else if let pin=try savedRuntimePin(directory:directory,mock:mock) {
+            env["RESET_RUNE_CODEX_PATH"]=pin
+        }
         return try PropertyListSerialization.data(fromPropertyList:["Label":Paths.label(mock:mock),"ProgramArguments":[executable.path,"--serve"]+(mock ? ["--mock"]:[]),"EnvironmentVariables":env,"WorkingDirectory":directory.path,"RunAtLoad":true,"KeepAlive":true,"ThrottleInterval":10],format:.xml,options:0)
+    }
+    private static func validRuntimePin(_ value:String) -> Bool {
+        value.hasPrefix("/") && !value.utf8.contains(0)
+    }
+    private static func savedRuntimePin(directory:URL,mock:Bool) throws -> String? {
+        let file=directory.appendingPathComponent(Paths.label(mock:mock)+".plist")
+        let fd=open(file.path,O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
+        if fd<0 {
+            if errno==ENOENT { return nil }
+            throw RuneError("insecure-service-registration")
+        }
+        defer { Darwin.close(fd) }
+        var info=stat()
+        guard fstat(fd,&info)==0,info.st_mode & S_IFMT == S_IFREG,info.st_uid==getuid(),
+              info.st_mode & 0o022==0,info.st_size>0,info.st_size<=65_536 else { throw RuneError("insecure-service-registration") }
+        let handle=FileHandle(fileDescriptor:fd,closeOnDealloc:false)
+        guard let data=try? handle.read(upToCount:65_537),data.count<=65_536,
+              let value=(try? PropertyListSerialization.propertyList(from:data,format:nil)) as? [String:Any],
+              value["Label"] as? String==Paths.label(mock:mock),
+              value["WorkingDirectory"] as? String==directory.path,
+              let arguments=value["ProgramArguments"] as? [String],arguments.contains("--mock")==mock,
+              let env=value["EnvironmentVariables"] as? [String:String] else { throw RuneError("invalid-service-registration") }
+        guard let pin=env["RESET_RUNE_CODEX_PATH"] else { return nil }
+        guard validRuntimePin(pin) else { throw RuneError("invalid-runtime-pin") }
+        return pin
     }
     public static func startup(_ enabled:Bool, directory:URL, mock:Bool) throws {
         let dir=FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/LaunchAgents")

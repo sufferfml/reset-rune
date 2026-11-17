@@ -85,6 +85,91 @@ final class ServiceTests:XCTestCase {
         XCTAssertThrowsError(try LifecycleLease(directory:dir))
         withExtendedLifetime(first) {}
     }
+    private func registration(_ dir:URL,mock:Bool=false,environment:[String:String]=[:]) throws -> [String:Any] {
+        let data=try NativeRuntime.plist(executable:dir.appendingPathComponent("helper"),directory:dir,mock:mock,environment:environment)
+        return try XCTUnwrap(PropertyListSerialization.propertyList(from:data,format:nil) as? [String:Any])
+    }
+    private func saveRegistration(_ value:[String:Any],_ dir:URL,mock:Bool=false) throws {
+        let data=try PropertyListSerialization.data(fromPropertyList:value,format:.xml,options:0)
+        try data.write(to:dir.appendingPathComponent(Paths.label(mock:mock)+".plist"),options:.atomic)
+    }
+    func testRuntimePinSurvivesServiceRegistrationRewrite() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        let pin=dir.appendingPathComponent("private codex/0.153.0/codex").path
+        try saveRegistration(registration(dir,environment:["RESET_RUNE_CODEX_PATH":pin,"CODEX_HOME":"/old/home"]),dir)
+        let updated=try registration(dir,environment:["PATH":"/new/path"])
+        let env=try XCTUnwrap(updated["EnvironmentVariables"] as? [String:String])
+        XCTAssertEqual(env["RESET_RUNE_CODEX_PATH"],pin)
+        XCTAssertEqual(env["PATH"],"/new/path")
+        XCTAssertNil(env["CODEX_HOME"],"Only the runtime pin is inherited; unrelated old environment is not restored")
+    }
+    func testExplicitRuntimePinOverridesPreviousRegistration() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        try saveRegistration(registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/old/codex"]),dir)
+        var updated=try registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/new/codex"])
+        XCTAssertEqual((updated["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"],"/new/codex")
+        // An explicit valid override can also repair malformed old metadata.
+        try Data("broken".utf8).write(to:dir.appendingPathComponent(Paths.label(mock:false)+".plist"))
+        updated=try registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/new/codex"])
+        XCTAssertEqual((updated["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"],"/new/codex")
+    }
+    func testUnpinnedRegistrationKeepsExistingDiscoveryBehavior() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        let fresh=try registration(dir)
+        XCTAssertNil((fresh["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"])
+        try saveRegistration(fresh,dir)
+        let restarted=try registration(dir)
+        XCTAssertNil((restarted["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"])
+    }
+    func testRuntimePinRejectsRegistrationFromAnotherScope() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        let original=try registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/private/codex"])
+        for (key,value) in [("Label","foreign.service" as Any),("WorkingDirectory","/another/directory" as Any),
+                            ("ProgramArguments",["/helper","--serve","--mock"] as Any),("EnvironmentVariables",["RESET_RUNE_CODEX_PATH":42] as Any)] {
+            var invalid=original;invalid[key]=value
+            try saveRegistration(invalid,dir)
+            XCTAssertThrowsError(try registration(dir),"Reject invalid \(key) instead of silently losing the pin")
+        }
+    }
+    func testRuntimePinRejectsMalformedAndUnsafeRegistration() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        let file=dir.appendingPathComponent(Paths.label(mock:false)+".plist")
+        try Data("invalid plist".utf8).write(to:file)
+        XCTAssertThrowsError(try registration(dir))
+        try Data(repeating:32,count:65_537).write(to:file)
+        XCTAssertThrowsError(try registration(dir))
+        try FileManager.default.removeItem(at:file)
+        let target=dir.appendingPathComponent("symlink-target")
+        try Data("not a registration".utf8).write(to:target)
+        try FileManager.default.createSymbolicLink(at:file,withDestinationURL:target)
+        XCTAssertThrowsError(try registration(dir))
+        try FileManager.default.removeItem(at:file)
+        try saveRegistration(registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/private/codex"]),dir)
+        try FileManager.default.setAttributes([.posixPermissions:0o666],ofItemAtPath:file.path)
+        XCTAssertThrowsError(try registration(dir))
+    }
+    func testInvalidRuntimePinCannotSilentlyFallBackToGlobalCodex() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        let original=try registration(dir)
+        for pin in ["relative/codex",""] {
+            XCTAssertThrowsError(try registration(dir,environment:["RESET_RUNE_CODEX_PATH":pin]))
+            var invalid=original;invalid["EnvironmentVariables"]=["RESET_RUNE_CODEX_PATH":pin]
+            try saveRegistration(invalid,dir)
+            XCTAssertThrowsError(try registration(dir))
+        }
+        XCTAssertThrowsError(try registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/codex\0injected"]))
+    }
+    func testMockRuntimePinDoesNotInheritLiveRegistration() throws {
+        let dir=try temporary();defer { try? FileManager.default.removeItem(at:dir) }
+        try saveRegistration(registration(dir,environment:["RESET_RUNE_CODEX_PATH":"/live/codex"]),dir)
+        var mock=try registration(dir,mock:true)
+        XCTAssertNil((mock["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"])
+        mock=try registration(dir,mock:true,environment:["RESET_RUNE_CODEX_PATH":"/mock/codex"])
+        try saveRegistration(mock,dir,mock:true)
+        mock=try registration(dir,mock:true)
+        XCTAssertEqual((mock["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"],"/mock/codex")
+        XCTAssertEqual((try registration(dir)["EnvironmentVariables"] as? [String:String])?["RESET_RUNE_CODEX_PATH"],"/live/codex")
+    }
     func testDataDirectoryAndMockIsolation() {
         let env=["RESET_RUNE_DATA_DIR":"/tmp/new"]
         XCTAssertEqual(Paths.directory(mock:false,env:env).path,"/tmp/new")

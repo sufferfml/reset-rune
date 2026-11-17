@@ -1,6 +1,14 @@
 # CodexTransport
 
-The transport uses the official Codex CLI `0.153.0` App Server protocol.
+The transport uses the official Codex App Server stable account/reset protocol,
+with **Codex CLI 0.153.0 or later** as the supported range. `0.153.0` also remains
+the optional private-installation baseline. Newer CLI versions are accepted by
+protocol compatibility instead of exact version equality; versions below the
+minimum, including its prereleases, are rejected before starting an account session.
+Sessions set `experimentalApi: false` and ignore unrelated additional fields.
+An application-private installation can be selected with `RESET_RUNE_CODEX_PATH`,
+independently of global Codex updates. See the [runtime maintenance guide](../../../docs/codex-runtime-compatibility.md)
+for verified installation and compatibility behavior across CLI versions.
 `CodexSource` implements `RuneCore.ResetSource`. Initialize with
 `allowConsume: true` only in the single execution service; the default is
 read-only. Codex owns login files and tokens, which this project never parses.
@@ -13,6 +21,12 @@ read-only. Codex owns login files and tokens, which this project never parses.
   path and file fingerprint, and merges concurrent reads. Each operation uses
   a bounded stdio App Server session and releases it when finished. A read
   session is never reused later as implicit authorization to consume.
+- `ProtocolCapabilities.swift` checks the stable redemption schema in an isolated
+  temporary HOME/CODEX_HOME before a non-baseline runtime can consume. Required
+  methods, explicit `creditId`, `idempotencyKey` and outcome structure must remain
+  compatible; additive schema changes are allowed. Successful capability checks
+  are cached against the resolved binary fingerprint. Reads do not perform schema
+  generation, and failed checks never send or try a different consume endpoint.
 - Consumption validates the explicit credit ID, fixed UUID, identity, expiry
   and caller gate, reads current account and quota in the same session,
   rechecks identity, then calls `account/rateLimitResetCredit/consume`.

@@ -31,7 +31,7 @@ private final class Fixture {
         let nodePaths = ProcessInfo.processInfo.environment["PATH", default: ""].split(separator: ":").map { String($0) + "/node" }
         let node = (nodePaths + ["/opt/homebrew/bin/node", "/usr/local/bin/node"]).first { FileManager.default.isExecutableFile(atPath: $0) }
         guard let node else { throw XCTSkip("Node is required only to run the synthetic App Server fixture") }
-        let body = "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo probe >> \(shellQuote(home.appendingPathComponent("probes.txt").path)); fi\nexec \(shellQuote(node)) \(shellQuote(fixture.path)) \"$@\"\n"
+        let body = "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo probe >> \(shellQuote(home.appendingPathComponent("probes.txt").path)); fi\nexec \(shellQuote(node)) \(shellQuote(fixture.path)) \"$@\" --fixture-mode \(shellQuote(mode)) --fixture-dir \(shellQuote(home.path))\n"
         try body.write(to: executable, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: executable.path)
         source = CodexSource(executable: executable.path, timeoutMs: timeoutMs,
@@ -41,13 +41,14 @@ private final class Fixture {
     }
     deinit { try? FileManager.default.removeItem(at: home) }
     func requests() throws -> [JSONObject] {
+        guard FileManager.default.fileExists(atPath: home.appendingPathComponent("rpc.jsonl").path) else { return [] }
         let data = try String(contentsOf: home.appendingPathComponent("rpc.jsonl"), encoding: .utf8)
         return try data.split(separator: "\n").map { try JSONSerialization.jsonObject(with: Data($0.utf8)) as! JSONObject }
     }
 }
 
 final class ProtocolTests: XCTestCase {
-    func testPinnedReadAndConcurrentCoalescing() async throws {
+    func testStableReadAndConcurrentCoalescing() async throws {
         let f = try Fixture()
         async let a = f.source.read()
         async let b = f.source.read()
@@ -78,18 +79,108 @@ final class ProtocolTests: XCTestCase {
         _ = try await f.source.read(); _ = try await f.source.read()
         let probes = try String(contentsOf: f.home.appendingPathComponent("probes.txt"), encoding: .utf8)
         XCTAssertEqual(probes.split(separator: "\n").count, 1)
-        try "#!/bin/sh\necho codex-cli 999.0.0\n".write(to: f.executable, atomically: true, encoding: .utf8)
+        try "#!/bin/sh\necho other-cli 999.0.0\n".write(to: f.executable, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: f.executable.path)
         do { _ = try await f.source.read(); XCTFail("changed binary must be reprobed") }
         catch let error as RuneError { XCTAssertEqual(error.code, "runtime-incompatible") }
     }
 
     func testMalformedAndTimedOutSessions() async throws {
-        for (mode, code, timeout) in [("wrong-version", "runtime-incompatible", 3000), ("stall", "timed-out", 150),
+        for (mode, code, timeout) in [("wrong-version", "runtime-incompatible", 3000), ("multiline-version", "runtime-incompatible", 3000), ("stall", "timed-out", 150),
                                       ("oversized", "protocol-error", 3000), ("server-request", "protocol-error", 3000)] {
             let f = try Fixture(mode: mode, timeoutMs: timeout)
             do { _ = try await f.source.read(); XCTFail("expected \(code)") }
             catch let error as RuneError { XCTAssertEqual(error.code, code); XCTAssertFalse(error.notSent) }
+        }
+    }
+
+    func testOtherCodexVersionsUseTheStableReadProtocol() async throws {
+        for mode in ["minimum-version", "minimum-build", "next-prerelease", "newer-version", "future-version", "prerelease-version"] {
+            let f = try Fixture(mode: mode)
+            let snapshot = try await f.source.read()
+            XCTAssertEqual(snapshot["availableCount"] as? Double, 2)
+            let initialize = try XCTUnwrap(f.requests().first)
+            XCTAssertEqual(((initialize["params"] as? JSONObject)?["capabilities"] as? JSONObject)?["experimentalApi"] as? Bool, false)
+            XCTAssertFalse(FileManager.default.fileExists(atPath: f.home.appendingPathComponent("schema-probes.txt").path), "Reading does not need a consume capability probe")
+        }
+    }
+
+    func testVersionsBelowMinimumNeverStartAccountOrConsumeSessions() async throws {
+        for mode in ["older-version", "lexically-newer-old-version", "below-minimum", "minimum-prerelease", "invalid-prerelease"] {
+            let f = try Fixture(mode: mode, consume: true)
+            do { _ = try await f.source.read(); XCTFail("Versions below the supported minimum must fail") }
+            catch let error as RuneError { XCTAssertEqual(error.code, "runtime-incompatible"); XCTAssertFalse(error.notSent) }
+            do { _ = try await f.source.consume(operation, maySend: { true }); XCTFail("Unsupported version cannot consume") }
+            catch let error as RuneError { XCTAssertEqual(error.code, "runtime-incompatible"); XCTAssertTrue(error.notSent) }
+            XCTAssertTrue(try f.requests().isEmpty)
+            XCTAssertFalse(FileManager.default.fileExists(atPath: f.home.appendingPathComponent("schema-probes.txt").path))
+        }
+    }
+
+    func testAdditionalStableFieldsDoNotPreventReadOrConsume() async throws {
+        let read = try Fixture(mode: "extra-fields")
+        let snapshot = try await read.source.read()
+        XCTAssertEqual(snapshot["availableCount"] as? Double, 2)
+        XCTAssertEqual(snapshot["redeemablePercent"] as? Double, 90)
+        let consume = try Fixture(mode: "live-extra-fields", consume: true)
+        let outcome = try await consume.source.consume(operation, maySend: { true })
+        XCTAssertEqual(outcome, "reset")
+        XCTAssertEqual(try consume.requests().filter { $0["method"] as? String == "account/rateLimitResetCredit/consume" }.count, 1)
+    }
+
+    func testNewerConsumeCapabilityIsIsolatedAndCachedUntilBinaryChanges() async throws {
+        let f = try Fixture(mode: "live-newer-version", consume: true)
+        _ = try await f.source.read()
+        for _ in 0..<2 {
+            let outcome = try await f.source.consume(operation, maySend: { true })
+            XCTAssertEqual(outcome, "reset")
+        }
+        func probes() throws -> [JSONObject] {
+            let data = try String(contentsOf: f.home.appendingPathComponent("schema-probes.txt"), encoding: .utf8)
+            return try data.split(separator: "\n").map { try JSONSerialization.jsonObject(with: Data($0.utf8)) as! JSONObject }
+        }
+        XCTAssertEqual(try probes().count, 1)
+        for probe in try probes() {
+            let home = try XCTUnwrap(probe["home"] as? String)
+            let codexHome = try XCTUnwrap(probe["codexHome"] as? String)
+            XCTAssertNotEqual(home, f.home.path)
+            XCTAssertNotEqual(codexHome, f.home.appendingPathComponent("live-newer-version").path)
+            XCTAssertFalse(FileManager.default.fileExists(atPath: home), "Offline probe sandbox must be removed")
+        }
+        let rewritten = try String(contentsOf: f.executable, encoding: .utf8) + "\n"
+        try rewritten.write(to: f.executable, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: f.executable.path)
+        _ = try await f.source.consume(operation, maySend: { true })
+        XCTAssertEqual(try probes().count, 2, "Updated binaries must not inherit prior consume capability")
+    }
+
+    func testNewerConsumeRequiresSchemaProofBeforeAccountSession() async throws {
+        for mode in ["live-newer-version-no-schema", "live-newer-version-missing-credit-schema", "live-newer-version-changes-during-probe"] {
+            let f = try Fixture(mode: mode, consume: true)
+            _ = try await f.source.read()
+            let prior = try f.requests().count
+            do { _ = try await f.source.consume(operation, maySend: { true }); XCTFail("Missing consume capability must block") }
+            catch let error as RuneError { XCTAssertEqual(error.code, "runtime-incompatible"); XCTAssertTrue(error.notSent) }
+            XCTAssertEqual(try f.requests().count, prior, "Reject before starting an account session or writing consume")
+        }
+    }
+
+    func testProtocolChangesStopBeforeConsume() async throws {
+        for (mode, code) in [("live-read-method-missing", "runtime-incompatible"), ("live-read-invalid-params", "runtime-incompatible"),
+                             ("live-missing-rate-limits", "protocol-error"), ("live-missing-account", "protocol-error")] {
+            let f = try Fixture(mode: mode, consume: true)
+            do { _ = try await f.source.consume(operation, maySend: { true }); XCTFail("Required protocol must remain available") }
+            catch let error as RuneError { XCTAssertEqual(error.code, code); XCTAssertTrue(error.notSent) }
+            XCTAssertFalse(try f.requests().contains { $0["method"] as? String == "account/rateLimitResetCredit/consume" })
+        }
+    }
+
+    func testUnrecognizedConsumeResultNeverRetriesOrClaimsNotSent() async throws {
+        for (mode, code) in [("live-unknown-outcome", "protocol-error"), ("live-consume-method-missing", "read-failed")] {
+            let f = try Fixture(mode: mode, consume: true)
+            do { _ = try await f.source.consume(operation, maySend: { true }); XCTFail("Written consume has no confirmed result") }
+            catch let error as RuneError { XCTAssertEqual(error.code, code); XCTAssertFalse(error.notSent) }
+            XCTAssertEqual(try f.requests().filter { $0["method"] as? String == "account/rateLimitResetCredit/consume" }.count, 1)
         }
     }
 

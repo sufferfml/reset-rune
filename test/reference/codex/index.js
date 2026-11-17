@@ -1,14 +1,17 @@
 import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { access, realpath } from 'node:fs/promises';
+import { access, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { delimiter, dirname, isAbsolute, join } from 'node:path';
 import { promisify } from 'node:util';
 import { sameIdentity, verified } from '../core/state.js';
 
-export const SUPPORTED_CODEX_VERSION = '0.153.0';
+export const BASELINE_CODEX_VERSION = '0.153.0';
+export const MINIMUM_CODEX_VERSION = '0.153.0';
+const MINIMUM_COMPONENTS = MINIMUM_CODEX_VERSION.split('.').map(BigInt);
+const CODEX_VERSION = /^codex-cli (0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const execFileAsync = promisify(execFile);
 const MAX_LINE_BYTES = 1024 * 1024;
 const OFFICIAL_BACKEND = 'chatgpt_base_url="https://chatgpt.com/backend-api/"';
@@ -74,7 +77,7 @@ function normalizeCredits(summary) {
   return { availableCount, creditsKnown, credits: available };
 }
 
-/** Normalize only fields from the documented 0.153.0 responses. */
+/** Normalize the documented stable fields; preserve unknown values and ignore additions. */
 export function normalizeSnapshot(account, usage) {
   if (account?.type !== 'chatgpt') {
     return {
@@ -134,6 +137,17 @@ function nativeNpmExecutable(path) {
   }
 }
 
+function meetsMinimumCodexVersion(text) {
+  const version = CODEX_VERSION.exec(text);
+  if (version === null || version[4]?.split('.').some(part => /^0[0-9]+$/.test(part))) return false;
+  const components = version.slice(1, 4).map(BigInt);
+  for (let index = 0; index < components.length; index += 1) {
+    if (components[index] !== MINIMUM_COMPONENTS[index]) return components[index] > MINIMUM_COMPONENTS[index];
+  }
+  // Build metadata does not affect precedence; a prerelease precedes this stable minimum.
+  return version[4] === undefined;
+}
+
 async function resolveRuntime(explicit, env) {
   if (explicit && !isAbsolute(explicit)) throw new CodexSourceError('runtime-missing');
   const candidates = explicit ? [explicit] : [
@@ -155,12 +169,97 @@ async function resolveRuntime(explicit, env) {
     inspected.add(path);
     try {
       const { stdout } = await execFileAsync(path, ['--version'], { env, cwd: '/', timeout: 3000, maxBuffer: 8192 });
-      if (stdout.trim() === `codex-cli ${SUPPORTED_CODEX_VERSION}`) return path;
+      // The minimum defines the supported range; actual protocol guards still apply above it.
+      if (meetsMinimumCodexVersion(stdout.trim())) {
+        const info = await stat(path);
+        if (!info.isFile()) continue;
+        return { path, version: stdout.trim().slice('codex-cli '.length),
+          fingerprint: [path, info.dev, info.ino, info.size, info.mtimeMs].join('\0') };
+      }
     } catch {
       // Probe failures may contain local paths or raw CLI output.
     }
   }
   throw new CodexSourceError(inspected.size ? 'runtime-incompatible' : 'runtime-missing');
+}
+
+function schemaNode(node, document, depth = 0) {
+  if (depth > 12 || !isObject(node)) throw new CodexSourceError('runtime-incompatible');
+  if (!Object.hasOwn(node, '$ref')) return node;
+  if (typeof node.$ref !== 'string' || !node.$ref.startsWith('#/')) throw new CodexSourceError('runtime-incompatible');
+  let target = document;
+  for (const part of node.$ref.slice(2).split('/')) {
+    const key = part.replaceAll('~1', '/').replaceAll('~0', '~');
+    if (!isObject(target) || !Object.hasOwn(target, key)) throw new CodexSourceError('runtime-incompatible');
+    target = target[key];
+  }
+  return schemaNode(target, document, depth + 1);
+}
+
+function schemaAcceptsString(input, document, depth = 0) {
+  const node = schemaNode(input, document, depth);
+  if (node.type === 'string' || (Array.isArray(node.type) && node.type.includes('string'))) return true;
+  return ['oneOf', 'anyOf'].some(key => Array.isArray(node[key])
+    && node[key].some(value => schemaAcceptsString(value, document, depth + 1)));
+}
+
+function schemaEnum(input, document, depth = 0) {
+  const node = schemaNode(input, document, depth);
+  if (Array.isArray(node.enum) && node.enum.every(value => typeof value === 'string')) return node.enum;
+  const variants = node.oneOf ?? node.anyOf;
+  if (!Array.isArray(variants)) throw new CodexSourceError('runtime-incompatible');
+  return variants.flatMap(value => schemaEnum(value, document, depth + 1));
+}
+
+async function verifyConsumeCapability(executable) {
+  let temporary;
+  try {
+    temporary = await mkdtemp(join(tmpdir(), 'reset-rune-consume-schema-'));
+    const home = join(temporary, 'home'), codexHome = join(temporary, 'codex'), output = join(temporary, 'schema');
+    await Promise.all([home, codexHome, output].map(path => mkdir(path, { mode: 0o700 })));
+    await execFileAsync(executable, ['app-server', 'generate-json-schema', '--out', output], {
+      cwd: temporary, timeout: 5000, killSignal: 'SIGKILL', maxBuffer: 8192,
+      env: { HOME: home, CODEX_HOME: codexHome, PATH: '/usr/bin:/bin', TMPDIR: temporary },
+    });
+    let entries = 0, bytes = 0;
+    async function inspect(directory, depth = 0) {
+      if (depth > 12) throw new CodexSourceError('runtime-incompatible');
+      for (const entry of await readdir(directory)) {
+        if (++entries > 1024) throw new CodexSourceError('runtime-incompatible');
+        const path = join(directory, entry), info = await lstat(path);
+        if (info.isDirectory()) await inspect(path, depth + 1);
+        else {
+          if (!info.isFile() || info.size > 4 * 1024 * 1024) throw new CodexSourceError('runtime-incompatible');
+          bytes += info.size;
+          if (bytes > 16 * 1024 * 1024) throw new CodexSourceError('runtime-incompatible');
+        }
+      }
+    }
+    if (!(await lstat(output)).isDirectory()) throw new CodexSourceError('runtime-incompatible');
+    await inspect(output);
+    const request = JSON.parse(await readFile(join(output, 'ClientRequest.json'), 'utf8'));
+    const variants = schemaNode(request, request).oneOf;
+    if (!Array.isArray(variants)) throw new CodexSourceError('runtime-incompatible');
+    const consume = variants.map(value => schemaNode(value, request)).find(value =>
+      Array.isArray(value.properties?.method?.enum)
+      && value.properties.method.enum.includes('account/rateLimitResetCredit/consume'));
+    const params = schemaNode(consume?.properties?.params, request);
+    if (!Array.isArray(params.required) || !params.required.includes('idempotencyKey')
+      || params.required.some(key => !['creditId', 'idempotencyKey'].includes(key))
+      || !schemaAcceptsString(params.properties?.creditId, request)
+      || !schemaAcceptsString(params.properties?.idempotencyKey, request)) {
+      throw new CodexSourceError('runtime-incompatible');
+    }
+    const response = JSON.parse(await readFile(join(output, 'v2/ConsumeAccountRateLimitResetCreditResponse.json'), 'utf8'));
+    const result = schemaNode(response, response);
+    if (!Array.isArray(result.required) || !result.required.includes('outcome')) throw new CodexSourceError('runtime-incompatible');
+    const supported = new Set(schemaEnum(result.properties?.outcome, response));
+    if (![...outcomes.keys()].every(outcome => supported.has(outcome))) throw new CodexSourceError('runtime-incompatible');
+  } catch {
+    throw new CodexSourceError('runtime-incompatible');
+  } finally {
+    if (temporary) await rm(temporary, { recursive: true, force: true }).catch(() => {});
+  }
 }
 
 function redemptionGuard(snapshot, operation, at) {
@@ -220,7 +319,10 @@ function runAppServer(executable, env, timeoutMs, { operation, now = Date.now } 
         return;
       }
       if (message.id !== expectedId || (expectedId === 5 && !sent)) return finish('protocol-error');
-      if (Object.hasOwn(message, 'error')) return finish('read-failed');
+      if (Object.hasOwn(message, 'error')) {
+        const incompatible = !sent && [-32601, -32602].includes(message.error?.code);
+        return finish(incompatible ? 'runtime-incompatible' : 'read-failed');
+      }
       if (!isObject(message.result)) return finish('protocol-error');
 
       if (expectedId === 1) {
@@ -228,6 +330,7 @@ function runAppServer(executable, env, timeoutMs, { operation, now = Date.now } 
         send({ method: 'initialized' });
         send({ id: 2, method: READ_ACCOUNT, params: { refreshToken: false } });
       } else if (expectedId === 2) {
+        if (!Object.hasOwn(message.result, 'account')) return finish('protocol-error');
         account = message.result.account ?? null;
         if (account !== null && (!isObject(account) || typeof account.type !== 'string')) {
           return finish('protocol-error');
@@ -301,7 +404,7 @@ function runAppServer(executable, env, timeoutMs, { operation, now = Date.now } 
 
     send({ id: 1, method: 'initialize', params: {
       clientInfo: { name: 'reset-rune', title: 'Bottled Reset Rune', version: '0.1.2' },
-      capabilities: { experimentalApi: true },
+      capabilities: { experimentalApi: false },
     } });
   });
 }
@@ -312,12 +415,13 @@ export function createCodexSource({
 } = {}) {
   const safeEnv = childEnvironment(env);
   let inFlight;
+  const capabilityChecks = new Map();
   const source = {
     mode: allowConsume ? 'live' : 'readonly',
     read() {
       if (!inFlight) {
         inFlight = resolveRuntime(executable, safeEnv)
-          .then(path => runAppServer(path, safeEnv, timeoutMs))
+          .then(runtime => runAppServer(runtime.path, safeEnv, timeoutMs))
           .finally(() => { inFlight = null; });
       }
       return inFlight;
@@ -332,8 +436,18 @@ export function createCodexSource({
         || typeof operation.maySend !== 'function') {
         throw beforeSend(new CodexSourceError('preflight-ineligible'));
       }
-      const path = await resolveRuntime(executable, safeEnv).catch(error => { throw beforeSend(error); });
-      return runAppServer(path, safeEnv, timeoutMs, { operation, now });
+      const runtime = await resolveRuntime(executable, safeEnv).catch(error => { throw beforeSend(error); });
+      if (runtime.version !== BASELINE_CODEX_VERSION) {
+        if (!capabilityChecks.has(runtime.fingerprint)) {
+          const pending = verifyConsumeCapability(runtime.path).catch(error => {
+            capabilityChecks.delete(runtime.fingerprint);
+            throw error;
+          });
+          capabilityChecks.set(runtime.fingerprint, pending);
+        }
+        await capabilityChecks.get(runtime.fingerprint).catch(error => { throw beforeSend(error); });
+      }
+      return runAppServer(runtime.path, safeEnv, timeoutMs, { operation, now });
     };
   }
   return source;

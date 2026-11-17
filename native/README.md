@@ -1,6 +1,6 @@
 # Bottled Reset Rune 原生实现
 
-原生菜单栏界面、后台服务和 CLI 面向 macOS 13+；神符功能通过固定兼容版本的官方 Codex App Server 操作，信使功能使用各目标桌面适配器。npm 与 DMG 使用相同的执行核心，不携带浏览器或 Node.js 常驻运行时。
+原生菜单栏界面、后台服务和 CLI 面向 macOS 13+；神符功能支持官方 Codex CLI 0.153.0 及以上版本，并通过 App Server 稳定协议核对实际账号/库存合同与兑换能力，不要求精确版本一致；信使功能使用各目标桌面适配器。npm 与 DMG 使用相同的执行核心，不携带浏览器或 Node.js 常驻运行时。
 
 「信使任务」已有本地合同、调度、主应用投递宿主、原生管理窗和内存模拟适配器。Codex 采用当前桌面版本的本机聊天通道，只读握手核对与真实发送验收分别记录；已只读核对的精确版本配置可由用户明确启用派发，发送前再核对桌面通道和指定聊天的归属。当前尚未执行真实发送验收，模拟通过不能作为真实送达证据。Claude 和未知 Codex 版本继续按各自兼容门禁处理。范围与验证门槛见[开发计划](../docs/courier-development-plan.md)和[技术方案](../docs/courier-technical-design.md)。
 
@@ -87,6 +87,8 @@ swift test --package-path native
 数据目录为 `~/Library/Application Support/Bottled Reset Rune`，模拟状态位于其中的 `simulation` 子目录。`RESET_RUNE_DATA_DIR` 可指定独立目录，`RESET_RUNE_CODEX_PATH` 可指定兼容的官方 Codex 可执行文件。`CODEX_HOME` 由 Codex 自行管理。
 
 后台运行包保存为 `runtime/current` 和一个 `runtime/previous`。安装写者由生命周期锁串行化，执行者由独占监听约束。配置和操作记录与程序副本分离。
+
+全局 Codex 更新后若出现 `runtime-incompatible`，可用 `python3 scripts/install-codex-runtime.py` 安装应用专用的固定兼容 CLI，再通过 `RESET_RUNE_CODEX_PATH` 激活，无需降级全局 Codex。本分支的配置生成器会保留同目录、同标签已固定的路径，显式环境变量优先。旧版二进制维护时仍需携带该变量；安装、恢复及后续版本验证见[CLI 兼容维护](../docs/codex-runtime-compatibility.md)。
 
 通过 npm 安装可直接运行 `reset-rune`。通过 DMG 安装时，CLI 位于应用内，例如移除后台服务：
 
