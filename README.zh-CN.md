@@ -12,12 +12,14 @@ Bottled Reset Rune 是一款轻量、开源的 macOS 菜单栏工具。每枚**�
 
 ## 安装
 
-需要 **macOS 13 或更新版本**，以及已安装并登录的官方 **Codex CLI 0.153.0**。
+需要 **macOS 13 或更新版本**，以及已安装并登录的官方 **Codex CLI 0.153.0 或更新版本**。新版按稳定账号与重置协议检查兼容，不再逐版维护允许名单。
+
+自动兑换前会检查必要能力，直接使用本机兼容的 Codex 即可，单独固定 CLI 是可选项。0.1.3 支持上述范围；旧版 0.1.2 仍要求精确 CLI 0.153.0，详见[CLI 兼容维护](docs/codex-runtime-compatibility.md)。
 
 ### macOS 应用
 
-- [下载 Apple 芯片版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-arm64.dmg)
-- [下载 Intel 版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-x64.dmg)
+- [下载 Apple 芯片版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.3/Bottled-Reset-Rune-0.1.3-arm64.dmg)
+- [下载 Intel 版](https://github.com/sufferfml/reset-rune/releases/download/v0.1.3/Bottled-Reset-Rune-0.1.3-x64.dmg)
 
 打开 DMG，将 Bottled Reset Rune 拖入“应用程序”，然后打开应用。两个版本均已通过 Developer ID 签名和 Apple 公证。
 

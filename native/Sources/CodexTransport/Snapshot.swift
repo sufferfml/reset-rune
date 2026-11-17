@@ -1,4 +1,4 @@
-// INPUT: Pinned Codex 0.153.0 account and quota responses.
+// INPUT: Stable Codex account/quota responses; 0.153.0 is the verified baseline.
 // OUTPUT: v1 normalized snapshots, preserving unknown inventory and raw identity.
 // POS: Official transport normalization; see native/README.md.
 import Foundation

@@ -26,6 +26,8 @@ jobs:
         run: npm ci
       - name: Run mock and unit checks
         run: npm test
+      - name: Check isolated optional runtime installer
+        run: python3 -m unittest discover -s scripts -p 'test_install_codex_runtime.py'
       - name: Check native toolchain
         run: swift --version
       - name: Run native synthetic checks

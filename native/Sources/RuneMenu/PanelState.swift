@@ -208,7 +208,7 @@ enum PanelCopy {
             "missed": ("Reset Rune expired", "已错过到期时段"),
             "error": ("Codex status unavailable", "Codex 状态暂不可用"),
             "runtime-missing": ("Codex runtime unavailable. Check the connection.", "找不到 Codex 运行时，请检查连接。"),
-            "runtime-incompatible": ("The Codex runtime is incompatible.", "当前 Codex 运行时不兼容。"),
+            "runtime-incompatible": ("The Codex version or protocol is incompatible. Use CLI 0.153.0 or later, or update reset-rune.", "Codex 版本或协议不兼容，请使用 CLI 0.153.0 或更新版本，或更新 reset-rune。"),
             "timed-out": ("Codex status check timed out", "检查 Codex 状态超时")
         ]
         let result = values[value] ?? values["error"]!

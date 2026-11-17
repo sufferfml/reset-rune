@@ -1,6 +1,6 @@
 # Bottled Reset Rune 原生实现
 
-原生菜单栏界面、后台服务和 CLI 面向 macOS 13+，通过固定兼容版本的官方 Codex App Server 操作。npm 与 DMG 使用相同的执行核心，不携带浏览器或 Node.js 常驻运行时。
+原生菜单栏界面、后台服务和 CLI 面向 macOS 13+，支持官方 Codex CLI 0.153.0 及以上版本，并通过 App Server 稳定协议核对实际账号/库存合同与兑换能力，不要求精确版本一致。npm 与 DMG 使用相同的执行核心，不携带浏览器或 Node.js 常驻运行时。
 
 ## 入口与职责
 
@@ -10,7 +10,7 @@
 | `Sources/RuneCore/Contracts.swift` | JSON 合同、`ResetSource`、`StateStore`、错误及调度结果 |
 | `Sources/RuneCore/State.swift` | 配置、身份、授权与库存摘要 |
 | `Sources/RuneCore/Engine.swift` | 串行状态机、持久操作记录和下一任务决策 |
-| `Sources/CodexTransport` | App Server stdio 传输、运行时发现、账号与库存归一化 |
+| `Sources/CodexTransport` | App Server 稳定 stdio 传输、最低版本与兑换能力核对、账号和库存归一化；见[模块说明](Sources/CodexTransport/README.md) |
 | `Sources/RuneService` | 私有文件、回环通信、订阅、系统事件和运行包管理 |
 | `Sources/RuneCommand` | `reset-rune` 命令入口 |
 | `Sources/RuneMenu` | `BottledResetRuneMenu` 菜单栏与紧凑原生面板。[MenuArtwork](Sources/RuneMenu/MenuArtwork.swift) 在应用包和源码调试环境中加载[界面美术](../assets/ARTWORK.md)。 |
@@ -65,6 +65,8 @@ swift test --package-path native
 
 后台运行包保存为 `runtime/current` 和一个 `runtime/previous`。安装写者由生命周期锁串行化，执行者由独占监听约束。配置和操作记录与程序副本分离。
 
+0.1.3 起，CLI 版本达到最低要求后按实际稳定协议检查兼容；非基线运行时首次兑换前会隔离生成 schema 核对指定神符和幂等能力。已明确选择的 `RESET_RUNE_CODEX_PATH` 会在同目录、同服务标签的重启或升级中保留，显式新设置优先。也可用 `python3 scripts/install-codex-runtime.py` 安装可选的独立基线副本，无需降级全局 Codex。安装、恢复和兼容边界见[CLI 兼容维护](../docs/codex-runtime-compatibility.md)。
+
 通过 npm 安装可直接运行 `reset-rune`。通过 DMG 安装时，CLI 位于应用内，例如移除后台服务：
 
 ```sh
@@ -82,5 +84,7 @@ node scripts/verify-native-artifacts.mjs
 ```
 
 `--signed` 使用本机明确选择的 Developer ID；`--notarize` 另行上传 Apple 并使用指定的 Keychain profile。默认不上传、不发布。
+
+`CSC_NAME` 可明确选择签名证书指纹，`RESET_RUNE_NOTARY_PROFILE` 指定已有公证凭据配置。默认 Apple 时间戳入口无法连通时，可通过 `RESET_RUNE_TIMESTAMP_URL` 为本次构建指定已核对的 Apple HTTP 时间戳入口；仍要求可信签名时间戳，不关闭校验或省略时间戳。
 
 `dist/native/` 包含 Apple 芯片与 Intel 两份 DMG、两个原生 npm 平台包、npm 主包、manifest 和校验清单。npm 主包是薄入口，实际下载量包括匹配架构的平台包。两种渠道的签名应用内容必须一致。

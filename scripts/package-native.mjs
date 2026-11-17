@@ -13,13 +13,15 @@ const archArg=args.indexOf('--arch'), arches=archArg<0||args[archArg+1]==='all' 
 if (arches.some(a=>!['arm64','x64'].includes(a))) throw Error('Use --arch arm64, x64 or all');
 if(notarize&&!signed)throw Error('--notarize requires --signed');
 const exec=async(file,argv,opts={})=>run(file,argv,{cwd:root,maxBuffer:32*1024*1024,...opts});
+const timestampURL=process.env.RESET_RUNE_TIMESTAMP_URL;
+if(timestampURL&&new URL(timestampURL).protocol!=='http:')throw Error('codesign timestamp URLs must use HTTP; timestamp signatures remain verified');
 let identity='-';
 if(signed){
  const {stdout}=await exec('/usr/bin/security',['find-identity','-v','-p','codesigning']);
  const matches=[...stdout.matchAll(/([A-F0-9]{40})\s+"(Developer ID Application:[^"]+)"/g)].filter(m=>!process.env.CSC_NAME||m[1]===process.env.CSC_NAME||m[2].includes(process.env.CSC_NAME));
  if(matches.length!==1)throw Error('Select one Developer ID with CSC_NAME'); identity=matches[0][1];
 }
-const sign=async(file)=>exec('/usr/bin/codesign',['--force','--sign',identity,...(signed?['--options','runtime','--timestamp']:['--timestamp=none']),file]);
+const sign=async(file)=>exec('/usr/bin/codesign',['--force','--sign',identity,...(signed?['--options','runtime',timestampURL?`--timestamp=${timestampURL}`:'--timestamp']:['--timestamp=none']),file]);
 const plist=async(file,obj)=>{await writeFile(file,JSON.stringify(obj));await exec('/usr/bin/plutil',['-convert','xml1',file]);};
 const repositoryBase='https://github.com/sufferfml/reset-rune/blob/main/';
 async function portableMarkdown(relativePath) {
@@ -46,7 +48,7 @@ for(const arch of arches){
  await cp(path.join(bin,'BottledResetRuneMenu'),path.join(app,'Contents/MacOS/Bottled Reset Rune'));
  await cp(path.join(bin,'reset-rune'),path.join(helper,'Contents/MacOS/reset-rune'));
  for(const file of [path.join(app,'Contents/MacOS/Bottled Reset Rune'),path.join(helper,'Contents/MacOS/reset-rune')]){await chmod(file,0o755);await exec('/usr/bin/strip',['-S',file]);}
- const common={CFBundlePackageType:'APPL',CFBundleShortVersionString:version,CFBundleVersion:'103',LSMinimumSystemVersion:'13.0',NSHighResolutionCapable:true};
+ const common={CFBundlePackageType:'APPL',CFBundleShortVersionString:version,CFBundleVersion:'104',LSMinimumSystemVersion:'13.0',NSHighResolutionCapable:true};
  await plist(path.join(helper,'Contents/Info.plist'),{...common,CFBundleIdentifier:'local.reset-rune.runtime',CFBundleExecutable:'reset-rune',CFBundleName:'Bottled Reset Rune Service',LSBackgroundOnly:true});
  await plist(path.join(app,'Contents/Info.plist'),{...common,CFBundleIdentifier:'local.reset-rune.desktop',CFBundleExecutable:'Bottled Reset Rune',CFBundleName:'Bottled Reset Rune',CFBundleDisplayName:'Bottled Reset Rune',CFBundleIconFile:'icon',LSUIElement:true,BottledResetRuneNative:true,NSAppTransportSecurity:{NSAllowsLocalNetworking:true}});
  for(const name of ['bottle.png','bottle-empty.png','reset-rune.png','dota-divider.png','dota-texture.jpg','dota-success.png'])await cp(path.join(root,'assets/panel',name),path.join(resources,name));

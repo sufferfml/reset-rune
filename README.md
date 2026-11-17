@@ -12,12 +12,14 @@ The name comes from the Regeneration Rune you can store in a Bottle in Dota 2.
 
 ## Install
 
-Requires **macOS 13 or later** and the official **Codex CLI 0.153.0**, installed and logged in.
+Requires **macOS 13 or later** and the official **Codex CLI 0.153.0 or later**, installed and logged in. Newer versions are checked against the stable account/reset protocol rather than an exact version allowlist.
+
+Automatic redemption checks the required capabilities before sending. Use your existing compatible Codex installation; a separate pinned CLI is optional. Version 0.1.3 supports this range; older 0.1.2 builds require the exact CLI 0.153.0. See [runtime maintenance](docs/codex-runtime-compatibility.md) (Chinese).
 
 ### macOS app
 
-- [Download for Apple Silicon](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-arm64.dmg)
-- [Download for Intel](https://github.com/sufferfml/reset-rune/releases/download/v0.1.2/Bottled-Reset-Rune-0.1.2-x64.dmg)
+- [Download for Apple Silicon](https://github.com/sufferfml/reset-rune/releases/download/v0.1.3/Bottled-Reset-Rune-0.1.3-arm64.dmg)
+- [Download for Intel](https://github.com/sufferfml/reset-rune/releases/download/v0.1.3/Bottled-Reset-Rune-0.1.3-x64.dmg)
 
 Open the DMG, drag Bottled Reset Rune into Applications, then open the app. Both versions are Developer ID signed and Apple notarized.
 

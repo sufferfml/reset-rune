@@ -11,7 +11,7 @@
 | 模块 | 职责 |
 | --- | --- |
 | `Sources/RuneCore` | JSON 合同、授权、操作状态机和调度决策 |
-| `Sources/CodexTransport` | 固定兼容版本的官方 App Server，见模块 README |
+| `Sources/CodexTransport` | Codex CLI ≥ 0.153.0 的稳定账号/重置协议；按实际合同及兑换能力检查兼容，见模块 README |
 | `Sources/RuneService` | 私有持久化、回环鉴权 API、状态订阅、launchd 和运行包管理 |
 | `Sources/RuneCommand` | 短时 CLI 与安装、升级、回退、卸载入口 |
 | `Sources/RuneMenu` | 菜单栏图标、紧凑设置面板和后台状态订阅 |

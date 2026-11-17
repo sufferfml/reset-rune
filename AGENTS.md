@@ -24,6 +24,7 @@
 | `distribution/npm/cli.cjs` | 按架构定位原生平台包的短时 npm 入口 |
 | `scripts/package-native.mjs` | 双架构应用、DMG 与 npm 平台包构建 |
 | `scripts/verify-native-artifacts.mjs` | 签名、架构和跨渠道内容核验 |
+| `scripts/install-codex-runtime.py`、`docs/codex-runtime-compatibility.md` | 可选独立 CLI 的校验安装、入口保留与稳定协议兼容规则 |
 | `test/reference/core`、`test/reference/codex` | 供跨语言合同验证使用的 JavaScript 参考实现，不随发行包运行 |
 | `test/contracts` | 合成账号、摘要和状态转换的共享测试向量 |
 | `docs/acceptance-matrix.md` | 验证范围与需要区分的证据类型 |
